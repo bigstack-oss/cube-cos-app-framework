@@ -1,0 +1,285 @@
+kubernetes:
+  version: "v1.32.4+rke2r1"
+  name: "app-framework"
+  cloud:
+    provider: "openstack"
+  network:
+    cni: "cilium"
+  master:
+    name: "master"
+    quantity: 1
+    flavor:
+      name: "appfw.large"
+  worker:
+    name: "worker"
+    quantity: 1
+    flavor:
+      name: "appfw.large"
+  plugins:
+    controllers:
+      - plugins/controllers/setup-snapshot-controller.yaml
+      - plugins/controllers/rbac-snapshot-controller.yaml
+    helm:
+      charts:
+        - release: "cinder-csi"
+          version: "2.31.2"
+          namespace: "kube-system"
+          tgz:
+            local: "plugins/charts/openstack-cinder-csi-2.31.2.tgz"
+        - release: "manila-csi"
+          version: "2.31.1"
+          namespace: "kube-system"
+          tgz:
+            local: "plugins/charts/openstack-manila-csi-2.31.1.tgz"
+        - release: "csi-driver-nfs"
+          version: "v4.9.0"
+          namespace: "kube-system"
+          tgz:
+            local: "plugins/charts/csi-driver-nfs-v4.9.0.tgz"
+        - release: "openstack-cloud-controller-manager"
+          version: "1.3.0"
+          namespace: "kube-system"
+          tgz:
+            local: "plugins/charts/openstack-cloud-controller-manager-1.3.0.tgz"
+  registry:
+    mirrors:
+      - hostname: "*"
+        to: "http://10.32.10.180:5080"
+      - hostname: "index.docker.io"
+        to: "http://10.32.10.180:5080"
+      - hostname: "docker.io"
+        to: "http://10.32.10.180:5080"
+      - hostname: "registry.k8s.io"
+        to: "http://10.32.10.180:5080"
+      - hostname: "registry-1.docker.io"
+        to: "http://10.32.10.180:5080"
+      - hostname: "quay.io"
+        to: "http://10.32.10.180:5080"
+      - hostname: "synology"
+        to: "http://10.32.10.180:5080"
+  config: "kubeconfig"
+
+
+rancher:
+  url: "https://10.32.10.180:10443"
+  auth:
+    token: ""
+
+
+openstack:
+  auth:
+    type: "password"
+    url: "http://10.32.10.180:5000/v3"
+    username: ""
+    password: ""
+    project:
+      name: "admin"
+      domain:
+        name: "default"
+  project:
+    name: "app-framework"
+    domain:
+      name: "default"
+  user:
+    name: "app-framework"
+    domain:
+      Name: "default"
+  roles:
+    - name: "admin"
+      user: "admin_cli"
+    - name: "admin"
+      user: "admin (IAM)"
+    - name: "_member_"
+      user: "app-framework"
+  endpointType: "publicURL"
+  routers:
+    - name: "public"
+      network:
+        name: "public"
+      subnets:
+        - name: "private_subnet"
+        - name: "private-k8s_subnet"
+      adminStateUp: true
+    # - name: "mgmt"
+    #   network:
+    #     name: "mgmt"
+    #   subnets:
+    #     - name: "private-k8s_subnet"
+    #       portIp: "192.168.1.254"
+    #   adminStateUp: true
+  networks:
+    - name: "private"
+      ipVersion: 4
+      adminStateUp: true
+      shared: false
+      management: "public"
+      public: "public"
+      subnets:
+        - name: "private_subnet"
+          ipVersion: 4
+          cidr: "192.168.0.0/24"
+          gatewayIp: "192.168.0.1"
+          enableDhcp: true
+          allocationPools:
+            - start: "192.168.0.2"
+              end: "192.168.0.253"
+    - name: "private-k8s"
+      ipVersion: 4
+      adminStateUp: true
+      shared: false
+      management: "public"
+      public: "public"
+      subnets:
+        - name: "private-k8s_subnet"
+          ipVersion: 4
+          cidr: "192.168.1.0/24"
+          gatewayIp: "192.168.1.1"
+          enableDhcp: true
+          allocationPools:
+            - start: "192.168.1.2"
+              end: "192.168.1.253"
+          # hostRoutes:
+          #   - destination: "10.32.10.180/32"
+          #     nexthop: "192.168.1.254"
+  floatingIpPool: "public"
+  securityGroups:
+    - name: "default"
+      rules:
+        - direction: "egress"
+          description: "whitelist - openstack metadata server"
+          etherType: "IPv4"
+          protocol: ""
+          cidr: "169.254.169.254"
+          portRange:
+            min: 0
+            max: 0
+        - direction: "egress"
+          description: "whitelist - DNS"
+          etherType: "IPv4"
+          protocol: "udp"
+          cidr: "0.0.0.0/0"
+          portRange:
+            min: 53
+            max: 53
+        - direction: "egress"
+          description: "whitelist - DHCP"
+          etherType: "IPv4"
+          protocol: "udp"
+          cidr: "0.0.0.0/0"
+          portRange:
+            min: 67
+            max: 67
+    - name: "default-k8s"
+      rules:
+        - direction: "egress"
+          etherType: "IPv4"
+          protocol: "tcp"
+          cidr: "10.32.10.180/32"
+          portRange:
+            min: 5000
+            max: 5000
+        - direction: "egress"
+          etherType: "IPv4"
+          protocol: "tcp"
+          cidr: "10.32.10.180/32"
+          portRange:
+            min: 8774
+            max: 8774
+        - direction: "egress"
+          etherType: "IPv4"
+          protocol: "tcp"
+          cidr: "10.32.10.180/32"
+          portRange:
+            min: 8776
+            max: 8776
+        - direction: "egress"
+          etherType: "IPv4"
+          protocol: "tcp"
+          cidr: "10.32.10.180/32"
+          portRange:
+            min: 8786
+            max: 8786
+        - direction: "egress"
+          etherType: "IPv4"
+          protocol: "tcp"
+          cidr: "10.32.10.180/32"
+          portRange:
+            min: 9696
+            max: 9696
+        - direction: "egress"
+          etherType: "IPv4"
+          protocol: "tcp"
+          cidr: "10.32.10.180/32"
+          portRange:
+            min: 9876
+            max: 9876
+        - direction: "egress"
+          etherType: "IPv4"
+          protocol: "tcp"
+          cidr: "10.32.10.180/32"
+          portRange:
+            min: 10443
+            max: 10443
+        - direction: "ingress"
+          etherType: "IPv4"
+          protocol: ""
+          cidr: "10.32.0.0/16"
+          portRange:
+            min: 0
+            max: 0
+        - direction: "ingress"
+          etherType: "IPv4"
+          protocol: "tcp"
+          cidr: "0.0.0.0/0"
+          portRange:
+            min: 22
+            max: 22
+        - direction: "ingress"
+          etherType: "IPv4"
+          protocol: "tcp"
+          cidr: "0.0.0.0/0"
+          portRange:
+            min: 80
+            max: 80
+        - direction: "ingress"
+          etherType: "IPv4"
+          protocol: "tcp"
+          cidr: "0.0.0.0/0"
+          portRange:
+            min: 443
+            max: 443
+        - direction: "ingress"
+          etherType: "IPv4"
+          protocol: "tcp"
+          cidr: "0.0.0.0/0"
+          portRange:
+            min: 2376
+            max: 2376
+        - direction: "ingress"
+          etherType: "IPv4"
+          protocol: "tcp"
+          cidr: "0.0.0.0/0"
+          portRange:
+            min: 6443
+            max: 6443
+        - direction: "ingress"
+          etherType: "IPv4"
+          protocol: "tcp"
+          cidr: "0.0.0.0/0"
+          portRange:
+            min: 30000
+            max: 32767
+        - direction: "ingress"
+          etherType: "IPv4"
+          protocol: "udp"
+          cidr: "0.0.0.0/0"
+          portRange:
+            min: 30000
+            max: 32767
+  flavor:
+    name: "appfw.large"
+  ssh:
+    user: "ubuntu"
+    port: 22
+  image:
+    name: "rke2-1.30.6"

@@ -1,0 +1,73 @@
+version: "3"
+
+vars:
+  appctl: "appctl"
+  devCosUser: "root"
+  devCosIp: "10.32.45.1"
+  devE2EIp: "10.32.200.12"
+  devE2EContainer: "3c_3p_5s"
+  devE2ENode: "10.1.0.1"
+
+tasks:
+  check:
+    cmds:
+      - task: vet
+      - task: diffMod
+      - task: diffApiDocs
+  build:
+    cmds:
+      - task: buildLocalBinary
+  vet:
+    cmds:
+      - GOWORK=off go vet ./...
+  diffMod:
+    cmds:
+      - GOWORK=off go mod tidy
+  diffApiDocs:
+    cmds:
+      - git diff --exit-code api
+  test:
+    cmds:
+      - GOWORK=off go test -v ./...
+  buildLocalBinary:
+    cmds:
+      - GOWORK=off GOOS=linux GOARCH=amd64 go build -o bin/{{.appctl}} cmd/main.go
+  deployRemoteDevAppctl:
+    cmds:
+      - task: buildLocalBinary
+      - task: moveLocalBinaryToRemoteCos
+      - task: moveLocalConfigToRemoteCos
+  deployRemoteE2EApi:
+    cmds:
+      - task: buildLocalBinary
+      - task: moveLocalBinaryToRemoteE2E
+      - task: moveLocalConfigToRemoteE2E
+  initRemoteCosWorkspace:
+    cmds:
+      - ssh {{.devCosUser}}@{{.devCosIp}} "mkdir -p /etc/cube/appctl"
+      - ssh {{.devCosUser}}@{{.devCosIp}} "grep {{.appctl}} /etc/group || groupadd {{.appctl}}"
+      - ssh {{.devCosUser}}@{{.devCosIp}} "id {{.appctl}} || useradd -g {{.appctl}} {{.appctl}}"
+  moveLocalBinaryToRemoteCos:
+    cmds:
+      - ssh {{.devCosUser}}@{{.devCosIp}} "rm /usr/local/bin/{{.appctl}}"
+      - scp bin/{{.appctl}} {{.devCosUser}}@{{.devCosIp}}:/usr/local/bin/{{.appctl}}
+      - ssh {{.devCosUser}}@{{.devCosIp}} "chown -R {{.appctl}}:{{.appctl}} /usr/local/bin/{{.appctl}}"
+  moveLocalBinaryToRemoteE2E:
+    cmds:
+      - ssh {{.devCosUser}}@{{.devE2EIp}} "rm /opt/{{.appctl}}"
+      - scp bin/{{.appctl}} {{.devCosUser}}@{{.devE2EIp}}:/opt/{{.appctl}}
+      - ssh {{.devCosUser}}@{{.devE2EIp}} "docker cp /opt/{{.appctl}} {{.devE2EContainer}}:/opt/{{.appctl}}"
+      - ssh {{.devCosUser}}@{{.devE2EIp}} "docker exec -i {{.devE2EContainer}} ssh root@{{.devE2ENode}} rm /usr/local/bin/{{.appctl}}"
+      - ssh {{.devCosUser}}@{{.devE2EIp}} "docker exec -i {{.devE2EContainer}} scp /opt/{{.appctl}} root@{{.devE2ENode}}:/usr/local/bin/{{.appctl}}"
+      - ssh {{.devCosUser}}@{{.devE2EIp}} "docker exec -i {{.devE2EContainer}} ssh root@{{.devE2ENode}} chown -R {{.appctl}}:{{.appctl}} /usr/local/bin/{{.appctl}}"
+    ignore_error: true
+  moveLocalConfigToRemoteCos:
+    cmds:
+      - scp configs/{{.appctl}}.yaml.template {{.devCosUser}}@{{.devCosIp}}:/etc/cube/api/appctl.yaml
+      - scp init/appctl.service {{.devCosUser}}@{{.devCosIp}}:/lib/systemd/system
+  moveLocalConfigToRemoteE2E:
+    cmds:
+      - scp configs/{{.appctl}}.yaml.template {{.devCosUser}}@{{.devE2EIp}}:/opt/appctl.yaml
+      - ssh {{.devCosUser}}@{{.devE2EIp}} "docker cp /opt/appctl.yaml {{.devE2EContainer}}:/opt/appctl.yaml"
+      - ssh {{.devCosUser}}@{{.devE2EIp}} "docker exec -i {{.devE2EContainer}} ssh root@{{.devE2ENode}} rm /etc/cube/api/appctl.yaml"
+      - ssh {{.devCosUser}}@{{.devE2EIp}} "docker exec -i {{.devE2EContainer}} scp /opt/appctl.yaml root@{{.devE2ENode}}:/etc/cube/api/appctl.yaml"
