@@ -1,37 +1,45 @@
 version: 2
 updates: 
+      
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: daily
       time: "09:00"
+      timezone: "Asia/Taipei"
+    groups:
+      minor-and-patch:
+        applies-to: version-updates
+        update-types: 
+          - "minor"
+          - "patch"
+      sec-minor-and-patch:
+        applies-to: security-updates
+        update-types: 
+          - "minor"
+          - "patch"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
-#  - package-ecosystem: "" # See documentation for possible values
-#    directory: "/" # Location of package manifests
-#    schedule:
-#      interval: "weekly"
-#      time: "09:00"
-#      timezone: "Asia/Taipei"
-#  - package-ecosystem: "" # See documentation for possible values
-#    directories:
-#      - directory1
-#      - directory2
-#    schedule:
-#      interval: weekly
-#      day: monday
-#      time: 09:00
-#    update-types: ["version-update:semver-patch"]
-#    groups:
-#      minor-and-patch:
-#        applies-to: version-updates
-#        update-types: 
-#          - "minor"
-#          - "patch"
-#      sec-minor-and-patch:
-#        applies-to: security-updates
-#        update-types: 
-#          - "minor"
-#          - "patch"
-#    ignore:
-#      - dependency-name: "*"
-#        update-types: ["version-update:semver-major"]
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: "Asia/Taipei"
+    groups:
+      minor-and-patch:
+        applies-to: version-updates
+        update-types: 
+          - "minor"
+          - "patch"
+      sec-minor-and-patch:
+        applies-to: security-updates
+        update-types: 
+          - "minor"
+          - "patch"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
