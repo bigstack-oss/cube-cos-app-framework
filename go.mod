@@ -3,11 +3,8 @@ module github.com/bigstack-oss/cube-cos-app-framework
 go 1.24.0
 
 require (
-	github.com/bigstack-oss/bigstack-dependency-go v0.0.0-20250626131352-51ee547908a9
+	github.com/bigstack-oss/bigstack-dependency-go v0.0.0-20250628082735-847e3a64406d
 	github.com/gophercloud/gophercloud/v2 v2.7.0
-	github.com/hashicorp/go-version v1.7.0
-	github.com/hashicorp/hc-install v0.9.2
-	github.com/hashicorp/terraform-exec v0.23.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.9.1
 	go-micro.dev/v5 v5.3.0
@@ -57,6 +54,7 @@ require (
 	github.com/go-resty/resty/v2 v2.16.3 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/btree v1.1.3 // indirect
 	github.com/google/gnostic-models v0.6.9 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
@@ -69,6 +67,9 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
+	github.com/hashicorp/go-version v1.7.0 // indirect
+	github.com/hashicorp/hc-install v0.9.2 // indirect
+	github.com/hashicorp/terraform-exec v0.23.0 // indirect
 	github.com/hashicorp/terraform-json v0.24.0 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
@@ -105,11 +106,16 @@ require (
 	github.com/spf13/cast v1.7.0 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
+	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
+	github.com/xdg-go/scram v1.1.2 // indirect
+	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
+	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	github.com/zclconf/go-cty v1.16.2 // indirect
+	go.mongodb.org/mongo-driver v1.17.2 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.39.0 // indirect
 	golang.org/x/mod v0.25.0 // indirect

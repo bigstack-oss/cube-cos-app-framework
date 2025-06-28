@@ -6,7 +6,9 @@ var (
 
 	OsImageUser        = "ubuntu"
 	EtcSettings        = "/etc/settings.txt"
+	EtcOpenstackAuth   = "/etc/admin-openrc.sh"
 	TerrformWorkingDir = "/var/lib/terraform"
+	TerraformVersion   = "0.14.3"
 
 	IsHaEnabled   = false
 	ManagementNet = ""
@@ -17,4 +19,6 @@ var (
 	CubeSysRole              = "cubesys.role"
 	CubeSysControllerVip     = "cubesys.control.vip"
 	CubeSysControllerIp      = "cubesys.controller.ip"
+
+	LogPath = "/var/log/appctl/appctl.log"
 )

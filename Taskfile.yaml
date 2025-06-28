@@ -31,7 +31,7 @@ tasks:
       - GOWORK=off go test -v ./...
   buildLocalBinary:
     cmds:
-      - GOWORK=off GOOS=linux GOARCH=amd64 go build -o bin/{{.appctl}} cmd/main.go
+      - GOWORK=off GOOS=linux GOARCH=amd64 go build -o bin/{{.appctl}} main.go
   deployRemoteDevAppctl:
     cmds:
       - task: buildLocalBinary
@@ -52,6 +52,7 @@ tasks:
       - ssh {{.devCosUser}}@{{.devCosIp}} "rm /usr/local/bin/{{.appctl}}"
       - scp bin/{{.appctl}} {{.devCosUser}}@{{.devCosIp}}:/usr/local/bin/{{.appctl}}
       - ssh {{.devCosUser}}@{{.devCosIp}} "chown -R {{.appctl}}:{{.appctl}} /usr/local/bin/{{.appctl}}"
+    ignore_error: true
   moveLocalBinaryToRemoteE2E:
     cmds:
       - ssh {{.devCosUser}}@{{.devE2EIp}} "rm /opt/{{.appctl}}"
@@ -64,7 +65,6 @@ tasks:
   moveLocalConfigToRemoteCos:
     cmds:
       - scp configs/{{.appctl}}.yaml.template {{.devCosUser}}@{{.devCosIp}}:/etc/cube/api/appctl.yaml
-      - scp init/appctl.service {{.devCosUser}}@{{.devCosIp}}:/lib/systemd/system
   moveLocalConfigToRemoteE2E:
     cmds:
       - scp configs/{{.appctl}}.yaml.template {{.devCosUser}}@{{.devE2EIp}}:/opt/appctl.yaml
