@@ -79,7 +79,6 @@ var (
 				},
 			},
 		},
-		Rancher: Rancher{Url: ""},
 		Openstack: Openstack{
 			Project: &projects.Project{
 				Name:     "app-framework",
@@ -302,6 +301,5 @@ var (
 
 type Spec struct {
 	Openstack  `yaml:"openstack"`
-	Rancher    `yaml:"rancher"`
 	Kubernetes `yaml:"kubernetes"`
 }

@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/bigstack-oss/cube-cos-app-framework/cmd/install"
-	"github.com/bigstack-oss/cube-cos-app-framework/internal/runtime"
+	"github.com/bigstack-oss/cube-cos-app-framework/internal/definition/base"
 	"github.com/spf13/cobra"
 )
 
@@ -18,10 +18,6 @@ func init() {
 }
 
 func Execute() error {
-	err := runtime.InitBase()
-	if err != nil {
-		return err
-	}
-
+	base.PrintWelcomeMessages()
 	return rootCmd.Execute()
 }

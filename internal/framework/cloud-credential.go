@@ -2,22 +2,28 @@ package framework
 
 import (
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/rancher"
+	log "go-micro.dev/v5/logger"
 )
 
 func (h *Helper) applyCloudCredential() error {
-	password := h.genUserPassword(h.User.Name)
+	password := h.genUserPassword(h.Spec.Openstack.User.Name)
 	spec := h.genCloudCredentialSpec(
-		h.Config.Rancher.Project.Name,
+		h.Spec.Openstack.Project.Name,
 		password,
 	)
 
-	cloudCredential, err := h.Rancher.CreateCloudCredential(&spec)
+	var err error
+	h.Spec.Kubernetes.Cloud.Credential, err = h.Rancher.CreateCloudCredential(&spec)
 	if err != nil {
 		return err
 	}
 
-	h.Config.Kubernetes.Cloud.Credential = cloudCredential
-	h.Log.Infof("cloud credential created Successfully (%s %s)", cloudCredential.Name, cloudCredential.Id)
+	log.Infof(
+		"framework: cloud credential created Successfully (%s %s)",
+		h.Spec.Kubernetes.Cloud.Credential.Name,
+		h.Spec.Kubernetes.Cloud.Credential.Id,
+	)
+
 	return nil
 }
 

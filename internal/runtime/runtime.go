@@ -9,11 +9,11 @@ import (
 	bsterraform "github.com/bigstack-oss/bigstack-dependency-go/pkg/terraform"
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/cubecos"
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/definition/base"
-	"github.com/bigstack-oss/cube-cos-app-framework/internal/definition/rancher"
+	defopenstack "github.com/bigstack-oss/cube-cos-app-framework/internal/definition/openstack"
 	log "go-micro.dev/v5/logger"
 )
 
-func InitBase() error {
+func Init() error {
 	err := initIdentities()
 	if err != nil {
 		return err
@@ -29,6 +29,12 @@ func InitBase() error {
 
 func initIdentities() error {
 	var err error
+	base.SystemSeed, err = cubecos.GetSystemSeed()
+	if err != nil {
+		log.Errorf("runtime: failed to get system seed(%v)", err)
+		return err
+	}
+
 	base.CurrentRole, err = cubecos.GetNodeRole()
 	if err != nil {
 		log.Errorf("runtime: failed to get node role(%v)", err)
@@ -70,16 +76,6 @@ func initDependencies() error {
 	return nil
 }
 
-func newAuthIdentities() error {
-	err := newRancherAuthIdentities()
-	if err != nil {
-		log.Errorf("runtime: failed to init rancher auth identities(%v)", err)
-		return err
-	}
-
-	return nil
-}
-
 func newGlobalHelpers() error {
 	err := newGlobalLogHelper()
 	if err != nil {
@@ -101,6 +97,16 @@ func newGlobalHelpers() error {
 	err = newGlobalTerraformHelper()
 	if err != nil {
 		log.Errorf("runtime: failed to init terraform helper(%v)", err)
+		return err
+	}
+
+	return nil
+}
+
+func newAuthIdentities() error {
+	err := newOpenstackAuthIdentities()
+	if err != nil {
+		log.Errorf("runtime: failed to init openstack auth identities(%v)", err)
 		return err
 	}
 
@@ -137,23 +143,10 @@ func newGlobalTerraformHelper() error {
 	)
 }
 
-func newRancherAuthIdentities() error {
-	h := bsterraform.GetGlobalHelper()
-	values, err := h.ShowResourceValues("rancher2_bootstrap")
-	if err != nil {
-		return err
-	}
-
-	for key, value := range values {
-		switch key {
-		case "url":
-			rancher.Url = value.(string)
-		case "user":
-			rancher.User = value.(string)
-		case "token":
-			rancher.Token = value.(string)
-		}
-	}
-
+func newOpenstackAuthIdentities() error {
+	defopenstack.Opts.Auth.Type = "file"
+	defopenstack.Opts.Auth.File = base.EtcOpenstackAuth
+	defopenstack.Opts.Auth.EnableAutoRenew = true
+	openstack.ParseAuthFile(&defopenstack.Opts)
 	return nil
 }

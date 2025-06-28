@@ -5,6 +5,7 @@ import (
 	computeQuota "github.com/gophercloud/gophercloud/v2/openstack/compute/v2/quotasets"
 	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/roles"
 	networkQuotas "github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/quotas"
+	log "go-micro.dev/v5/logger"
 )
 
 type memberAndRoleId struct {
@@ -12,44 +13,59 @@ type memberAndRoleId struct {
 	RoleId   string
 }
 
-func (h *Helper) applyProjectAndResourceQuota() error {
+func (h *Helper) createProject() error {
 	var err error
-	h.Project, err = h.Openstack.CreateProject(h.Project.Name)
+	h.Spec.Openstack.Project, err = h.Openstack.CreateProject(h.Spec.Openstack.Project.Name)
 	if err != nil {
+		log.Errorf("framework: failed to create project(%v)", err)
 		return err
 	}
 
-	err = h.applyUnlimitedResourceQuotas()
-	if err != nil {
-		return err
-	}
-
-	h.Log.Infof(
-		"project and resource quota set successfully (%s %s)",
-		h.Project.Name,
-		h.Project.ID,
+	log.Infof(
+		"framework: project is applied successfully(%s %s)",
+		h.Spec.Openstack.Project.Name,
+		h.Spec.Openstack.Project.ID,
 	)
+
 	return nil
 }
 
-func (h *Helper) addUserAndRolesToProject() error {
+func (h *Helper) unlimitProjectQuotas() error {
+	err := h.unlimitProjectResourceQuotas()
+	if err != nil {
+		log.Errorf("framework: failed to unlimit resource quotas(%v)", err)
+		return err
+	}
+
+	log.Infof(
+		"framework: resource quota us set successfully(%s %s)",
+		h.Spec.Openstack.Project.Name,
+		h.Spec.Openstack.Project.ID,
+	)
+
+	return nil
+}
+
+func (h *Helper) assignUserToProject() error {
 	memberRoles, err := h.getMemberAndRoleIdPairs()
 	if err != nil {
+		log.Errorf("framework: failed to get member and role id pairs(%v)", err)
 		return err
 	}
 
 	err = h.applyMembersToProject(memberRoles)
 	if err != nil {
+		log.Errorf("framework: failed to apply members to project(%v)", err)
 		return err
 	}
 
-	h.Log.Info("users and roles added to project successfully")
+	log.Info("framework: users and roles added to project successfully")
 	return nil
 }
 
-func (h *Helper) applyUnlimitedResourceQuotas() error {
+func (h *Helper) unlimitProjectResourceQuotas() error {
 	err := h.Openstack.UpdateComputeQuotas(
-		h.Project.ID,
+		h.Spec.Openstack.Project.ID,
 		h.genUnlimitedComputeQuota(),
 	)
 	if err != nil {
@@ -57,7 +73,7 @@ func (h *Helper) applyUnlimitedResourceQuotas() error {
 	}
 
 	err = h.Openstack.UpdateNetworkQuotas(
-		h.Project.ID,
+		h.Spec.Openstack.Project.ID,
 		h.genUnlimitedNetworkQuota(),
 	)
 	if err != nil {
@@ -65,7 +81,7 @@ func (h *Helper) applyUnlimitedResourceQuotas() error {
 	}
 
 	err = h.Openstack.UpdateStorageQuotas(
-		h.Project.ID,
+		h.Spec.Openstack.Project.ID,
 		h.genUnlimitedStorageQuota(),
 	)
 	if err != nil {
@@ -118,7 +134,7 @@ func (h *Helper) genUnlimitedStorageQuota() storageQuota.UpdateOpts {
 func (h *Helper) getMemberAndRoleIdPairs() ([]memberAndRoleId, error) {
 	memberRoles := []memberAndRoleId{}
 
-	for _, r := range h.Config.Openstack.Roles {
+	for _, r := range h.Spec.Openstack.Roles {
 		role, err := h.Openstack.GetRoleByName(r.Name)
 		if err != nil {
 			return nil, err
@@ -147,7 +163,7 @@ func (h *Helper) applyMembersToProject(memberRoles []memberAndRoleId) error {
 			memberRole.RoleId,
 			roles.AssignOpts{
 				UserID:    memberRole.MemberId,
-				ProjectID: h.Project.ID,
+				ProjectID: h.Spec.Openstack.Project.ID,
 			},
 		)
 		if err != nil {

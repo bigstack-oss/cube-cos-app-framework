@@ -2,9 +2,16 @@ package rancher
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/http"
 	log "go-micro.dev/v5/logger"
+)
+
+var (
+	helper *Helper
+
+	once sync.Once
 )
 
 type Helper struct {
@@ -12,20 +19,36 @@ type Helper struct {
 	Options Options
 }
 
-func NewHelper(opts ...Option) *Helper {
+func GetGlobalHelper() *Helper {
+	return helper
+}
+
+func NewGlobalHelper(opts ...Option) error {
+	var err error
+	once.Do(func() {
+		helper, err = NewHelper(opts...)
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func NewHelper(opts ...Option) (*Helper, error) {
 	syncedOpts := syncOptions(opts)
 	c, err := http.NewHelper(
 		http.TlsInsecureSkipVerify(true),
 	)
 	if err != nil {
 		log.Errorf("failed to init http helper: %s \n", err.Error())
-		return nil
+		return nil, err
 	}
 
 	return &Helper{
 		Http:    c,
 		Options: *syncedOpts,
-	}
+	}, nil
 }
 
 func syncOptions(opts []Option) *Options {

@@ -7,11 +7,12 @@ import (
 )
 
 var (
-	name          = ""
-	conf          = ""
-	publicNet     = ""
-	managementNet = ""
-	ip            = ""
+	name             = ""
+	publicNet        = ""
+	managementNet    = ""
+	ip               = ""
+	hostRouteGateway = ""
+	hostRouteCidr    = ""
 )
 
 func NewInstallCmd() *cobra.Command {
@@ -19,44 +20,45 @@ func NewInstallCmd() *cobra.Command {
 		Use:   "framework",
 		Short: "",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return install(conf)
+			return install()
 		},
 	}
 
-	setFlags(cmd)
+	parseFlags(cmd)
 	return cmd
 }
 
-func setFlags(cmd *cobra.Command) {
-	cmd.Flags().StringVarP(&name, "name", "n", "", "Name for the framework")
-	cmd.Flags().StringVarP(&conf, "conf", "c", "", "Configuration file for the framework")
-	cmd.Flags().StringVarP(&publicNet, "publicNet", "p", "", "Public network for the framework")
-	cmd.Flags().StringVarP(&managementNet, "managementNet", "m", "", "Management network for the framework")
+func parseFlags(cmd *cobra.Command) {
+	cmd.Flags().StringVarP(&name, "name", "", "", "Name for the framework")
+	cmd.Flags().StringVarP(&publicNet, "publicNet", "", "", "Public network for the framework")
+	cmd.Flags().StringVarP(&managementNet, "managementNet", "", "", "Management network for the framework")
 	cmd.Flags().StringVarP(&ip, "ip", "i", "", "IP address for the framework")
+	cmd.Flags().StringVarP(&hostRouteGateway, "hostRouteGateway", "", "", "host route gateway for the framework")
+	cmd.Flags().StringVarP(&hostRouteCidr, "hostRouteCidr", "", "", "host route cidr for the framework")
 
 	cmd.MarkFlagRequired("name")
 	cmd.MarkFlagRequired("publicNet")
 	cmd.MarkFlagRequired("managementNet")
 }
 
-func install(conf string) error {
-	h, err := framework.NewHelper(conf)
+func install() error {
+	h, err := framework.NewHelper()
 	if err != nil {
-		log.Errorf("failed to init deployer: %s", err.Error())
+		log.Errorf("framework: failed to init helper(%v)", err)
 		return err
 	}
 
-	h.ShowInfraSetupMessage()
-	err = h.ApplyOpenstackComponents()
+	h.PrintInfraSetupMessage()
+	err = h.ApplyOpenstackResources()
 	if err != nil {
-		log.Errorf("failed to apply openstack components: %s", err.Error())
+		log.Errorf("framework: failed to apply openstack components(%v)", err)
 		return err
 	}
 
-	h.ShowK8sSetupMessage()
-	err = h.ApplyKubernetesComponents()
+	h.PrintK8sSetupMessage()
+	err = h.ApplyKubernetesResources()
 	if err != nil {
-		log.Errorf("failed to apply kubernetes components: %s", err.Error())
+		log.Errorf("framework: failed to apply kubernetes components(%v)", err)
 		return err
 	}
 

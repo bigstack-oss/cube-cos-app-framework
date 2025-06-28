@@ -12,6 +12,7 @@ import (
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/rancher"
 	"github.com/gophercloud/gophercloud/v2/openstack/sharedfilesystems/v2/sharenetworks"
 	"github.com/pkg/errors"
+	log "go-micro.dev/v5/logger"
 	corev1 "k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -27,7 +28,7 @@ func (h *Helper) saveContentToLocal(config []byte, filename string) error {
 		return errors.Wrapf(err, "Failed to write kube config to file: %s", filename)
 	}
 
-	h.Log.Infof("Successfully saved kube config to file: %s", filename)
+	log.Infof("Successfully saved kube config to file: %s", filename)
 	return nil
 }
 
@@ -38,7 +39,7 @@ func (h *Helper) applyKubernetes(machinePool map[string]rancher.OpenstackMachine
 		return nil, err
 	}
 
-	h.Log.Infof("kubernetes cluster created successfully (%s %s)", cluster.Name, cluster.Id)
+	log.Infof("kubernetes cluster created successfully (%s %s)", cluster.Name, cluster.Id)
 	return cluster, nil
 }
 
@@ -47,7 +48,7 @@ func (h *Helper) genKubernetesSpec(machinePool map[string]rancher.OpenstackMachi
 		Type: "provisioning.cattle.io.cluster",
 		Metadata: rancher.Metadata{
 			Namespace: "fleet-default",
-			Name:      h.Config.Kubernetes.Name,
+			Name:      h.Spec.Kubernetes.Name,
 		},
 		Spec: rancher.Spec{
 			RkeConfig: rancher.RkeConfig{
@@ -77,7 +78,7 @@ func (h *Helper) genKubernetesSpec(machinePool map[string]rancher.OpenstackMachi
 				},
 				DataDirectories: rancher.DataDirectories{},
 				MachineGlobalConfig: rancher.MachineGlobalConfig{
-					Cni:               h.Config.Kubernetes.Cni,
+					Cni:               h.Spec.Kubernetes.Cni,
 					DisableKubeProxy:  false,
 					EtcdExposeMetrics: false,
 				},
@@ -102,8 +103,8 @@ func (h *Helper) genKubernetesSpec(machinePool map[string]rancher.OpenstackMachi
 				},
 				MachinePools: []rancher.MachinePool{
 					{
-						Name:              h.Config.Kubernetes.Master.Name,
-						Quantity:          h.Config.Kubernetes.Master.Quantity,
+						Name:              h.Spec.Kubernetes.Master.Name,
+						Quantity:          h.Spec.Kubernetes.Master.Quantity,
 						EtcdRole:          true,
 						ControlPlaneRole:  true,
 						WorkerRole:        false,
@@ -117,8 +118,8 @@ func (h *Helper) genKubernetesSpec(machinePool map[string]rancher.OpenstackMachi
 						Labels: rancher.Labels{},
 					},
 					{
-						Name:              h.Config.Kubernetes.Worker.Name,
-						Quantity:          h.Config.Kubernetes.Worker.Quantity,
+						Name:              h.Spec.Kubernetes.Worker.Name,
+						Quantity:          h.Spec.Kubernetes.Worker.Quantity,
 						EtcdRole:          false,
 						ControlPlaneRole:  false,
 						WorkerRole:        true,
@@ -138,10 +139,10 @@ func (h *Helper) genKubernetesSpec(machinePool map[string]rancher.OpenstackMachi
 					Config: rancher.Config{},
 				},
 			},
-			KubernetesVersion:                                    h.Config.Kubernetes.Version,
+			KubernetesVersion:                                    h.Spec.Kubernetes.Version,
 			DefaultPodSecurityPolicyTemplateName:                 "",
 			DefaultPodSecurityAdmissionConfigurationTemplateName: "",
-			CloudCredentialSecretName:                            h.Config.Kubernetes.Cloud.Credential.Id,
+			CloudCredentialSecretName:                            h.Spec.Kubernetes.Cloud.Credential.Id,
 			LocalClusterAuthEndpoint: rancher.LocalClusterAuthEndpoint{
 				Enabled: false,
 				CaCerts: "",
@@ -154,7 +155,7 @@ func (h *Helper) genKubernetesSpec(machinePool map[string]rancher.OpenstackMachi
 func (h *Helper) genRegistryMirrorLists() map[string]rancher.MirrorTo {
 	mirrorList := make(map[string]rancher.MirrorTo)
 
-	for _, mirror := range h.Config.Kubernetes.Registry.Mirrors {
+	for _, mirror := range h.Spec.Kubernetes.Registry.Mirrors {
 		mirrorList[mirror.Hostname] = rancher.MirrorTo{
 			Endpoint: []string{mirror.To},
 		}
@@ -201,7 +202,7 @@ func (h *Helper) initKubernetesClient() error {
 
 	h.Kubernetes, err = kubernetes.NewClient(
 		kubernetes.AuthType(kubernetes.OutOfClusterAuth),
-		kubernetes.AuthFile(h.Config.Kubernetes.Config),
+		kubernetes.AuthFile(h.Spec.Kubernetes.Config),
 	)
 	if err != nil {
 		return errors.Wrap(err, "Failed to create kubernetes client")
@@ -220,17 +221,17 @@ func (h *Helper) applyCsiManilaSecret() error {
 		},
 		Type: corev1.SecretTypeOpaque,
 		StringData: map[string]string{
-			"os-authURL":     h.Config.Openstack.Auth.Url,
+			"os-authURL":     h.Spec.Openstack.Auth.Url,
 			"os-region":      "RegionOne",
 			"os-domainName":  "default",
-			"os-userName":    h.Config.Openstack.User.Name,
-			"os-password":    h.genUserPassword(h.Config.Openstack.User.Name),
-			"os-projectName": h.Config.Openstack.Project.Name,
+			"os-userName":    h.Spec.Openstack.User.Name,
+			"os-password":    h.genUserPassword(h.Spec.Openstack.User.Name),
+			"os-projectName": h.Spec.Openstack.Project.Name,
 			"os-TLSInsecure": "true",
 		},
 	})
 	if err == nil {
-		h.Log.Info("Successfully created csi manila secrets")
+		log.Info("Successfully created csi manila secrets")
 		return nil
 	}
 
@@ -244,8 +245,8 @@ func (h *Helper) applyCsiManilaSecret() error {
 func (h *Helper) applyCsiManilaStorageClass() error {
 	h.Kubernetes.SetStorageClassClient()
 
-	shareNetName := fmt.Sprintf("share_net-%s_private-k8s", h.Config.Openstack.Project.Name)
-	shareNet, err := h.Openstack.GetShareNetworkByName(sharenetworks.ListOpts{Name: shareNetName, ProjectID: h.Project.ID})
+	shareNetName := fmt.Sprintf("share_net-%s_private-k8s", h.Spec.Openstack.Project.Name)
+	shareNet, err := h.Openstack.GetShareNetworkByName(sharenetworks.ListOpts{Name: shareNetName, ProjectID: h.Spec.Openstack.Project.ID})
 	if err != nil {
 		return errors.Wrap(err, "Failed to get share network")
 	}
@@ -271,7 +272,7 @@ func (h *Helper) applyCsiManilaStorageClass() error {
 		},
 	})
 	if err == nil {
-		h.Log.Info("Successfully created csi manila storage class csi-manila-nfs")
+		log.Info("Successfully created csi manila storage class csi-manila-nfs")
 		return nil
 	}
 
@@ -283,18 +284,18 @@ func (h *Helper) applyCsiManilaStorageClass() error {
 }
 
 func (h *Helper) applyExtraControllers() error {
-	for _, controller := range h.Config.Kubernetes.Controllers {
-		h.Log.Infof("Applying controller: %s", controller)
+	for _, controller := range h.Spec.Kubernetes.Controllers {
+		log.Infof("Applying controller: %s", controller)
 		file, err := os.Open(controller)
 		if err != nil {
-			h.Log.Errorf("failed to open file: %s", err.Error())
+			log.Errorf("failed to open file: %s", err.Error())
 			continue
 		}
 
 		defer file.Close()
 		err = h.Kubernetes.ApplyDynamicResource(file)
 		if err != nil {
-			h.Log.Errorf("failed to apply dynamic resource: %s", err.Error())
+			log.Errorf("failed to apply dynamic resource: %s", err.Error())
 		}
 	}
 
@@ -302,25 +303,25 @@ func (h *Helper) applyExtraControllers() error {
 }
 
 func (h *Helper) applyCustomResourceDefinitions() error {
-	for _, crd := range h.Config.Kubernetes.Crds {
-		h.Log.Infof("Applying custom resource definition: %s", crd)
+	for _, crd := range h.Spec.Kubernetes.Crds {
+		log.Infof("Applying custom resource definition: %s", crd)
 
 		docs, err := h.readDocuments(crd)
 		if err != nil {
-			h.Log.Errorf("failed to read crd: %s", err.Error())
+			log.Errorf("failed to read crd: %s", err.Error())
 			continue
 		}
 
 		for _, doc := range docs {
 			crd := &apiextensionsv1.CustomResourceDefinition{}
 			if err := sigyaml.Unmarshal(doc, crd); err != nil {
-				h.Log.Errorf("failed to unmarshal custom resource definition: %s", err.Error())
+				log.Errorf("failed to unmarshal custom resource definition: %s", err.Error())
 				continue
 			}
 
 			_, err = h.Kubernetes.ApplyCustomResourceDefinitions(*crd)
 			if err != nil {
-				h.Log.Errorf("failed to apply custom resource definition: %s", err.Error())
+				log.Errorf("failed to apply custom resource definition: %s", err.Error())
 			}
 		}
 	}
@@ -358,13 +359,13 @@ func (h *Helper) waitForAllServicesToBeActive() error {
 		return err
 	}
 
-	h.Log.Info("Waiting for all pods to be ready ...")
+	log.Info("Waiting for all pods to be ready ...")
 	err = h.waitForAllPodsToBeReady()
 	if err != nil {
 		return err
 	}
 
-	h.Log.Info("Waiting for all needed CRDs to be installed ...")
+	log.Info("Waiting for all needed CRDs to be installed ...")
 	err = h.waitForNeededCrdsToBeActive()
 	if err != nil {
 		return err

@@ -8,7 +8,7 @@ import (
 func (h *Helper) genValueOverridesCharts() ([]*helm.Chart, error) {
 	var charts []*helm.Chart
 
-	for _, chart := range h.Config.Kubernetes.Helm.Charts {
+	for _, chart := range h.Spec.Kubernetes.Helm.Charts {
 		overrideChart, err := h.overrideChartByRelease(chart.Release, chart)
 		if err != nil {
 			return nil, errors.Wrapf(err, "Failed to override chart by release")

@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/rancher"
+	log "go-micro.dev/v5/logger"
 )
 
 func (h *Helper) applyOpenstackMachinePools() (map[string]rancher.OpenstackMachineResponse, error) {
@@ -18,7 +19,7 @@ func (h *Helper) applyOpenstackMachinePools() (map[string]rancher.OpenstackMachi
 		return nil, err
 	}
 
-	h.Log.Infof("openstack machine pools created successfully (%s %s | %s %s)", "master", masters.Name, "worker", workers.Name)
+	log.Infof("openstack machine pools created successfully (%s %s | %s %s)", "master", masters.Name, "worker", workers.Name)
 	return map[string]rancher.OpenstackMachineResponse{
 		"master": *masters,
 		"worker": *workers,
@@ -40,21 +41,21 @@ func (h *Helper) genMasterMachineSpec() *rancher.OpenstackMachine {
 		ActiveTimeout: "2000",
 		Metadata: rancher.Metadata{
 			Namespace:    "fleet-default",
-			GenerateName: fmt.Sprintf("nc-%s-master-", h.Config.Kubernetes.Name),
+			GenerateName: fmt.Sprintf("nc-%s-master-", h.Spec.Kubernetes.Name),
 		},
-		AuthUrl:        h.Config.Openstack.Auth.Url,
-		FloatingipPool: h.Config.Openstack.FloatingIpPool,
+		AuthUrl:        h.Spec.Openstack.Auth.Url,
+		FloatingipPool: h.Spec.Openstack.FloatingIpPool,
 		Insecure:       true,
-		EndpointType:   h.Config.Openstack.EndpointType,
-		FlavorName:     h.Config.Kubernetes.Master.Flavor.Name,
-		ImageName:      h.Config.Openstack.Image.Name,
+		EndpointType:   h.Spec.Openstack.EndpointType,
+		FlavorName:     h.Spec.Kubernetes.Master.Flavor.Name,
+		ImageName:      h.Spec.Openstack.Image.Name,
 		IpVersion:      "4",
 		NetId:          h.getPrivateK8sNetId(),
 		SecGroups:      h.genCommaSplitSecurityGroups(),
-		SshPort:        strconv.Itoa(h.Config.Openstack.SSH.Port),
-		SshUser:        h.Config.Openstack.SSH.User,
-		TenantId:       h.Config.Openstack.Project.ID,
-		UserId:         h.Config.Openstack.User.ID,
+		SshPort:        strconv.Itoa(h.Spec.Openstack.SSH.Port),
+		SshUser:        h.Spec.Openstack.SSH.User,
+		TenantId:       h.Spec.Openstack.Project.ID,
+		UserId:         h.Spec.Openstack.User.ID,
 	}
 }
 
@@ -73,26 +74,26 @@ func (h *Helper) genWorkerMachineSpec() *rancher.OpenstackMachine {
 		ActiveTimeout: "2000",
 		Metadata: rancher.Metadata{
 			Namespace:    "fleet-default",
-			GenerateName: fmt.Sprintf("nc-%s-worker-", h.Config.Kubernetes.Name),
+			GenerateName: fmt.Sprintf("nc-%s-worker-", h.Spec.Kubernetes.Name),
 		},
-		AuthUrl:        h.Config.Openstack.Auth.Url,
+		AuthUrl:        h.Spec.Openstack.Auth.Url,
 		Insecure:       true,
-		FloatingipPool: h.Config.Openstack.FloatingIpPool,
-		EndpointType:   h.Config.Openstack.EndpointType,
-		FlavorName:     h.Config.Kubernetes.Worker.Flavor.Name,
-		ImageName:      h.Config.Openstack.Image.Name,
+		FloatingipPool: h.Spec.Openstack.FloatingIpPool,
+		EndpointType:   h.Spec.Openstack.EndpointType,
+		FlavorName:     h.Spec.Kubernetes.Worker.Flavor.Name,
+		ImageName:      h.Spec.Openstack.Image.Name,
 		IpVersion:      "4",
 		NetId:          h.getPrivateK8sNetId(),
 		SecGroups:      h.genCommaSplitSecurityGroups(),
-		SshPort:        strconv.Itoa(h.Config.Openstack.SSH.Port),
-		SshUser:        h.Config.Openstack.SSH.User,
-		TenantId:       h.Config.Openstack.Project.ID,
-		UserId:         h.Config.Openstack.User.ID,
+		SshPort:        strconv.Itoa(h.Spec.Openstack.SSH.Port),
+		SshUser:        h.Spec.Openstack.SSH.User,
+		TenantId:       h.Spec.Openstack.Project.ID,
+		UserId:         h.Spec.Openstack.User.ID,
 	}
 }
 
 func (h *Helper) getPrivateK8sNetId() string {
-	for _, network := range h.Config.Openstack.Networks {
+	for _, network := range h.Spec.Openstack.Networks {
 		if network.Name == "private-k8s" {
 			return network.ID
 		}
@@ -103,7 +104,7 @@ func (h *Helper) getPrivateK8sNetId() string {
 
 func (h *Helper) genCommaSplitSecurityGroups() string {
 	var secGroups string
-	for _, secGroup := range h.Config.Openstack.SecurityGroups {
+	for _, secGroup := range h.Spec.Openstack.SecurityGroups {
 		secGroups += secGroup.Name + ","
 	}
 

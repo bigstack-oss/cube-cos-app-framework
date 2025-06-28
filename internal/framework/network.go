@@ -4,17 +4,19 @@ import (
 	"fmt"
 
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/openstack/v2"
+	"github.com/bigstack-oss/cube-cos-app-framework/internal/definition/base"
 	"github.com/gophercloud/gophercloud/v2/openstack/sharedfilesystems/v2/sharenetworks"
+	log "go-micro.dev/v5/logger"
 )
 
-func (h *Helper) createShareFileSystemNetworks() error {
-	for _, network := range h.Config.Openstack.Networks {
-		shareNet := fmt.Sprintf("share_net-%s_%s", h.Project.Name, network.Name)
+func (h *Helper) createShareFsNetworks() error {
+	for _, network := range h.Spec.Openstack.Networks {
+		shareNet := fmt.Sprintf("%s-%s_%s", base.ShareNetPrefix, h.Spec.Openstack.Project.Name, network.Name)
 		if h.isShareNetworkExist(shareNet) {
 			continue
 		}
 
-		cli, err := h.newOpenstackCliByProject(h.Project.Name)
+		cli, err := h.newOpenstackCliByProject(h.Spec.Openstack.Project.Name)
 		if err != nil {
 			continue
 		}
@@ -27,7 +29,7 @@ func (h *Helper) createShareFileSystemNetworks() error {
 			return err
 		}
 
-		h.Log.Infof(
+		log.Infof(
 			"share network created successfully (%s %s)",
 			createdShareNet.Name,
 			createdShareNet.ID,
@@ -38,18 +40,18 @@ func (h *Helper) createShareFileSystemNetworks() error {
 }
 
 func (h *Helper) isShareNetworkExist(name string) bool {
-	_, err := h.Openstack.GetShareNetworkByName(sharenetworks.ListOpts{Name: name, ProjectID: h.Project.ID})
+	_, err := h.Openstack.GetShareNetworkByName(sharenetworks.ListOpts{Name: name, ProjectID: h.Spec.Openstack.Project.ID})
 	return err == nil
 }
 
 func (h *Helper) newOpenstackCliByProject(project string) (*openstack.Helper, error) {
 	return openstack.NewHelper(
-		openstack.AuthType(h.Config.Openstack.Auth.Type),
-		openstack.AuthUrl(h.Config.Openstack.Auth.Url),
+		openstack.AuthType(h.Spec.Openstack.Auth.Type),
+		openstack.AuthUrl(h.Spec.Openstack.Auth.Url),
 		openstack.ProjectName(project),
-		openstack.ProjectDomainName(h.Config.Openstack.Auth.Project.Domain.Name),
-		openstack.Username(h.Config.Openstack.Auth.Username),
-		openstack.Password(h.Config.Openstack.Auth.Password),
+		openstack.ProjectDomainName(h.Spec.Openstack.Auth.Project.Domain.Name),
+		openstack.Username(h.Spec.Openstack.Auth.Username),
+		openstack.Password(h.Spec.Openstack.Auth.Password),
 	)
 }
 

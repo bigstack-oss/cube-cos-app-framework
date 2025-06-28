@@ -31,20 +31,20 @@ func (h *Helper) customizeOpenstackCcmValues() (*values.Options, error) {
 		return nil, errors.Wrapf(err, "Failed to get network by name")
 	}
 
-	k8sSubnet, err := h.Openstack.GetSubnetByName(subnets.ListOpts{Name: "private-k8s_subnet", ProjectID: h.Config.Openstack.Project.ID})
+	k8sSubnet, err := h.Openstack.GetSubnetByName(subnets.ListOpts{Name: "private-k8s_subnet", ProjectID: h.Spec.Openstack.Project.ID})
 	if err != nil {
 		return nil, errors.Wrapf(err, "Failed to get network by name")
 	}
 
 	return &values.Options{
 		Values: []string{
-			fmt.Sprintf("cluster.name=%s", h.Config.Kubernetes.Name),
+			fmt.Sprintf("cluster.name=%s", h.Spec.Kubernetes.Name),
 			"secret.create=true",
 			"secret.name=cloud-config",
-			fmt.Sprintf("cloudConfig.global.auth-url=%s", h.Config.Openstack.Auth.Url),
-			fmt.Sprintf("cloudConfig.global.tenant-name=%s", h.Config.Openstack.Project.Name),
-			fmt.Sprintf("cloudConfig.global.username=%s", h.Config.Openstack.User.Name),
-			fmt.Sprintf("cloudConfig.global.password=%s", h.genUserPassword(h.User.Name)),
+			fmt.Sprintf("cloudConfig.global.auth-url=%s", h.Spec.Openstack.Auth.Url),
+			fmt.Sprintf("cloudConfig.global.tenant-name=%s", h.Spec.Openstack.Project.Name),
+			fmt.Sprintf("cloudConfig.global.username=%s", h.Spec.Openstack.User.Name),
+			fmt.Sprintf("cloudConfig.global.password=%s", h.genUserPassword(h.Spec.Openstack.User.Name)),
 			"cloudConfig.global.region=RegionOne",
 			"cloudConfig.global.domain-name=default",
 			"cloudConfig.global.tls-insecure=true",

@@ -1,23 +1,26 @@
 package framework
 
 import (
+	"github.com/bigstack-oss/cube-cos-app-framework/internal/configs"
 	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/security/rules"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/subnets"
+	log "go-micro.dev/v5/logger"
 )
 
-func (h *Helper) createNetworkAndAttachSubnets() error {
-	for i, n := range h.Config.Openstack.Networks {
+func (h *Helper) createNetworkWithSubnets() error {
+	for i, n := range h.Spec.Openstack.Networks {
 		network, err := h.Openstack.CreateNetwork(h.genNetworkCreationOpts(n))
 		if err != nil {
+			log.Errorf("framework: failed to create network %s(%v)", n.Name, err)
 			return err
 		}
 
-		h.Log.Infof("network created successfully (%s %s)", network.Name, network.ID)
-		h.Config.Openstack.Networks[i].ID = network.ID
-		err = h.createSubnetsToNetwork(&h.Config.Openstack.Networks[i])
+		log.Infof("framework: network is created successfully (%s %s)", network.Name, network.ID)
+		h.Spec.Openstack.Networks[i].ID = network.ID
+		err = h.createSubnetsOnNetwork(&h.Spec.Openstack.Networks[i])
 		if err != nil {
 			return err
 		}
@@ -26,16 +29,16 @@ func (h *Helper) createNetworkAndAttachSubnets() error {
 	return nil
 }
 
-func (h *Helper) genNetworkCreationOpts(n Network) networks.CreateOpts {
+func (h *Helper) genNetworkCreationOpts(n configs.Network) networks.CreateOpts {
 	return networks.CreateOpts{
-		ProjectID:    h.Project.ID,
+		ProjectID:    h.Spec.Openstack.Project.ID,
 		Name:         n.Name,
 		AdminStateUp: &n.AdminStateUp,
 		Shared:       &n.Shared,
 	}
 }
 
-func (h *Helper) genSubnetCreationOpts(s Subnet, networkID string) subnets.CreateOpts {
+func (h *Helper) genSubnetCreationOpts(s configs.Subnet, networkID string) subnets.CreateOpts {
 	return subnets.CreateOpts{
 		Name:            s.Name,
 		NetworkID:       networkID,
@@ -45,26 +48,26 @@ func (h *Helper) genSubnetCreationOpts(s Subnet, networkID string) subnets.Creat
 		EnableDHCP:      &s.EnableDHCP,
 		AllocationPools: s.AllocationPools,
 		HostRoutes:      s.HostRoutes,
-		ProjectID:       h.Project.ID,
+		ProjectID:       h.Spec.Openstack.Project.ID,
 	}
 }
 
-func (h *Helper) createSecurityGroupAndAddRules() error {
-	for _, s := range h.Config.Openstack.SecurityGroups {
+func (h *Helper) createSecurityGroupWithRules() error {
+	for _, s := range h.Spec.Openstack.SecurityGroups {
 		securityGroup, err := h.applySecurityGroup(s)
 		if err != nil {
 			continue
 		}
 
-		h.Log.Infof("security group created successfully (%s %s)", securityGroup.Name, securityGroup.ID)
-		h.checkIfNeedsToDeleteDefaultEgressRule(securityGroup)
+		log.Infof("framework: security group is created successfully (%s %s)", securityGroup.Name, securityGroup.ID)
+		h.deleteDefaultEgressRuleIfNeeded(securityGroup)
 		h.applyRulesToSecurityGroup(s.Rules, securityGroup.ID)
 	}
 
 	return nil
 }
 
-func (h *Helper) checkIfNeedsToDeleteDefaultEgressRule(sg *groups.SecGroup) {
+func (h *Helper) deleteDefaultEgressRuleIfNeeded(sg *groups.SecGroup) {
 	if sg.Name != "default-k8s" {
 		return
 	}
@@ -79,11 +82,11 @@ func (h *Helper) checkIfNeedsToDeleteDefaultEgressRule(sg *groups.SecGroup) {
 	}
 }
 
-func (h *Helper) applySecurityGroup(s SecurityGroup) (*groups.SecGroup, error) {
+func (h *Helper) applySecurityGroup(s configs.SecurityGroup) (*groups.SecGroup, error) {
 	secGroup, err := h.Openstack.CreateSecurityGroup(groups.CreateOpts{
 		Name:        s.Name,
 		Description: "",
-		ProjectID:   h.Project.ID,
+		ProjectID:   h.Spec.Openstack.Project.ID,
 	})
 	if err == nil {
 		return secGroup, nil
@@ -95,7 +98,7 @@ func (h *Helper) applySecurityGroup(s SecurityGroup) (*groups.SecGroup, error) {
 
 	secGroup, err = h.Openstack.GetSecurityGroupByName(groups.ListOpts{
 		Name:      s.Name,
-		ProjectID: h.Project.ID,
+		ProjectID: h.Spec.Openstack.Project.ID,
 	})
 	if err != nil {
 		return nil, err
@@ -104,10 +107,10 @@ func (h *Helper) applySecurityGroup(s SecurityGroup) (*groups.SecGroup, error) {
 	return secGroup, nil
 }
 
-func (h *Helper) applyRulesToSecurityGroup(rulesToCreate []Rule, securityGroupID string) {
+func (h *Helper) applyRulesToSecurityGroup(rulesToCreate []configs.Rule, securityGroupID string) {
 	for _, rule := range rulesToCreate {
 		_, err := h.Openstack.CreateSecurityGroupRule(rules.CreateOpts{
-			ProjectID:      h.Project.ID,
+			ProjectID:      h.Spec.Openstack.Project.ID,
 			SecGroupID:     securityGroupID,
 			Description:    rule.Description,
 			Direction:      rule.Direction,
@@ -118,7 +121,7 @@ func (h *Helper) applyRulesToSecurityGroup(rulesToCreate []Rule, securityGroupID
 			RemoteIPPrefix: rule.CIDR,
 		})
 		if err == nil {
-			h.Log.Infof(
+			log.Infof(
 				"security group rule attached successfully (%s %s %d %d)",
 				rule.Direction,
 				rule.Protocol,
@@ -134,17 +137,18 @@ func (h *Helper) applyRulesToSecurityGroup(rulesToCreate []Rule, securityGroupID
 	}
 }
 
-func (h *Helper) createSubnetsToNetwork(n *Network) error {
+func (h *Helper) createSubnetsOnNetwork(n *configs.Network) error {
 	for i, s := range n.Subnets {
 		subnet, err := h.Openstack.CreateSubnet(
 			h.genSubnetCreationOpts(s, n.ID),
 		)
 		if err != nil {
+			log.Errorf("framework: failed to create subnet %s(%v)", s.Name, err)
 			return err
 		}
 
 		n.Subnets[i].ID = subnet.ID
-		h.Log.Infof("subnet created successfully (%s %s)", subnet.Name, subnet.ID)
+		log.Infof("subnet created successfully (%s %s)", subnet.Name, subnet.ID)
 	}
 
 	return nil

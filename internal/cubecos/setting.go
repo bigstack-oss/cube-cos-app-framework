@@ -11,6 +11,10 @@ import (
 	log "go-micro.dev/v5/logger"
 )
 
+func GetSystemSeed() (string, error) {
+	return GetTuningValue(base.CubeSysSeed)
+}
+
 func IsHaEnabled() (bool, error) {
 	strIsHaEnabled, err := GetTuningValue(base.CubeSysHa)
 	if err != nil {

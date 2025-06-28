@@ -12,7 +12,7 @@ type CloudCredential struct {
 	Name                      string `json:"name"`
 	Type                      string `json:"type"`
 	BaseType                  string `json:"baseType"`
-	Metadata                  `json:"metadata,omitempty"`
+	Metadata                  `json:"metadata"`
 	Annotations               `json:"annotations"`
 	OpenstackCredentialConfig `json:"openstackcredentialConfig"`
 	Created                   string `json:"created"`

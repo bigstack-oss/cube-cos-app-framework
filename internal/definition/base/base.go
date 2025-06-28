@@ -3,6 +3,7 @@ package base
 var (
 	DataCenterVip = ""
 	CurrentRole   = ""
+	SystemSeed    = ""
 
 	OsImageUser        = "ubuntu"
 	EtcSettings        = "/etc/settings.txt"
@@ -14,6 +15,7 @@ var (
 	ManagementNet = ""
 
 	CubeNetIfAddrPrefix      = "net.if.addr."
+	CubeSysSeed              = "cubesys.seed"
 	CubeSysHa                = "cubesys.ha"
 	CubeSysManagementNetwork = "cubesys.management"
 	CubeSysRole              = "cubesys.role"
@@ -21,4 +23,6 @@ var (
 	CubeSysControllerIp      = "cubesys.controller.ip"
 
 	LogPath = "/var/log/appctl/appctl.log"
+
+	ShareNetPrefix = "share_net"
 )
