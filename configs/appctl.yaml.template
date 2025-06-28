@@ -9,12 +9,12 @@ kubernetes:
     name: "master"
     quantity: 1
     flavor:
-      name: "appfw.large"
+      name: "t2.large"
   worker:
     name: "worker"
     quantity: 1
     flavor:
-      name: "appfw.large"
+      name: "t2.large"
   plugins:
     controllers:
       - plugins/controllers/setup-snapshot-controller.yaml
@@ -100,13 +100,13 @@ openstack:
         - name: "private_subnet"
         - name: "private-k8s_subnet"
       adminStateUp: true
-    # - name: "mgmt"
-    #   network:
-    #     name: "mgmt"
-    #   subnets:
-    #     - name: "private-k8s_subnet"
-    #       portIp: "192.168.1.254"
-    #   adminStateUp: true
+    - name: "mgmt"
+      network:
+        name: "mgmt"
+      subnets:
+        - name: "private-k8s_subnet"
+          portIp: "192.168.1.254"
+      adminStateUp: true
   networks:
     - name: "private"
       ipVersion: 4
@@ -138,9 +138,9 @@ openstack:
           allocationPools:
             - start: "192.168.1.2"
               end: "192.168.1.253"
-          # hostRoutes:
-          #   - destination: "10.32.10.180/32"
-          #     nexthop: "192.168.1.254"
+          hostRoutes:
+            - destination: "10.32.10.180/32"
+              nexthop: "192.168.1.254"
   floatingIpPool: "public"
   securityGroups:
     - name: "default"
@@ -277,9 +277,9 @@ openstack:
             min: 30000
             max: 32767
   flavor:
-    name: "appfw.large"
+    name: "t2.large"
   ssh:
     user: "ubuntu"
     port: 22
   image:
-    name: "rke2-1.30.6"
+    name: "rke2-1.32.4"
