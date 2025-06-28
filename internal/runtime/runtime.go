@@ -144,7 +144,6 @@ func newGlobalTerraformHelper() error {
 }
 
 func newOpenstackAuthIdentities() error {
-	defopenstack.Opts.Auth.Type = "file"
 	defopenstack.Opts.Auth.File = base.EtcOpenstackAuth
 	defopenstack.Opts.Auth.EnableAutoRenew = true
 	openstack.ParseAuthFile(&defopenstack.Opts)

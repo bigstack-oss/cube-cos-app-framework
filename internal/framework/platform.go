@@ -22,12 +22,6 @@ type Helper struct {
 	Spec configs.Spec
 }
 
-// type Config struct {
-// 	Openstack  `yaml:"openstack"`
-// 	Rancher    `yaml:"rancher"`
-// 	Kubernetes `yaml:"kubernetes"`
-// }
-
 func NewHelper() (*Helper, error) {
 	h := &Helper{}
 
