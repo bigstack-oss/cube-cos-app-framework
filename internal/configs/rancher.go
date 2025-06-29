@@ -1,6 +1,6 @@
 package configs
 
 type Rancher struct {
-	Url  string `yaml:"url"`
-	Auth `yaml:"auth"`
+	Url  string `json:"url"`
+	Auth `json:"auth"`
 }

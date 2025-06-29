@@ -6,10 +6,13 @@ import (
 
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/openstack/v2"
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/configs"
+	"github.com/bigstack-oss/cube-cos-app-framework/internal/definition/base"
+	defopenstack "github.com/bigstack-oss/cube-cos-app-framework/internal/definition/openstack"
 	defrancher "github.com/bigstack-oss/cube-cos-app-framework/internal/definition/rancher"
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/helm"
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/kubernetes"
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/rancher"
+	"github.com/bigstack-oss/cube-cos-app-framework/internal/runtime"
 	log "go-micro.dev/v5/logger"
 )
 
@@ -22,28 +25,165 @@ type Helper struct {
 	Spec configs.Spec
 }
 
-func NewHelper() (*Helper, error) {
-	h := &Helper{}
+func NewHelper(spec configs.Spec) (*Helper, error) {
+	var err error
+	h := &Helper{Spec: spec}
+	defer h.ShowConfig()
 
-	err := h.initConf()
+	log.Infof("framework: fetching CubeCOS system info")
+	err = h.initBase()
+	if err != nil {
+		log.Errorf("framework: failed to init base(%v)", err)
+		return nil, err
+	}
+
+	log.Infof("framework: initializing openstack, rancher, and k8s configurations")
+	err = h.initConf()
 	if err != nil {
 		log.Errorf("framework: failed to init conf(%v)", err)
 		return nil, err
 	}
 
+	log.Infof("framework: initializing openstack, rancher, and k8s helpers")
 	err = h.initClis()
 	if err != nil {
 		log.Errorf("framework: failed to init clis(%v)", err)
 		return nil, err
 	}
 
-	h.ShowConfig()
 	return h, nil
 }
 
-func (h *Helper) initConf() error {
-	h.Spec = configs.DefaultSpec
+func (h *Helper) initBase() error {
+	err := runtime.InitSystemIdentities()
+	if err != nil {
+		log.Errorf("framework: failed to init system identities(%v)", err)
+		return err
+	}
+
+	err = runtime.NewOpenstackAuthIdentities()
+	if err != nil {
+		log.Errorf("framework: failed to init openstack auth identities(%v)", err)
+		return err
+	}
+
+	err = runtime.NewGlobalHttpHelper()
+	if err != nil {
+		log.Errorf("framework: failed to init global http helper(%v)", err)
+		return err
+	}
+
+	err = runtime.NewGlobalOpenstackHelper()
+	if err != nil {
+		log.Errorf("framework: failed to init global openstack helper(%v)", err)
+		return err
+	}
+
+	err = runtime.NewGlobalTerraformHelper()
+	if err != nil {
+		log.Errorf("framework: failed to init global terraform helper(%v)", err)
+		return err
+	}
+
 	return nil
+}
+
+func (h *Helper) initConf() error {
+	err := h.initOpenstackConf()
+	if err != nil {
+		log.Errorf("framework: failed to init openstack auth(%v)", err)
+		return err
+	}
+
+	err = h.initKubernetesConf()
+	if err != nil {
+		log.Errorf("framework: failed to init rancher auth(%v)", err)
+		return err
+	}
+
+	return nil
+}
+
+func (h *Helper) initOpenstackConf() error {
+	err := h.initOpenstackAuth()
+	if err != nil {
+		log.Errorf("framework: failed to init openstack auth(%v)", err)
+		return err
+	}
+
+	err = h.initOpenstackIdentities()
+	if err != nil {
+		log.Errorf("framework: failed to init openstack identities(%v)", err)
+		return err
+	}
+
+	return nil
+}
+
+func (h *Helper) initOpenstackAuth() error {
+	h.Spec.Openstack.Auth.Type = defopenstack.Opts.Auth.Type
+	h.Spec.Openstack.Auth.Url = defopenstack.Opts.Auth.Url
+	h.Spec.Openstack.Auth.Username = defopenstack.Opts.User.Name
+	h.Spec.Openstack.Auth.Password = defopenstack.Opts.Password
+	h.Spec.Openstack.Auth.Domain.Name = defopenstack.Opts.User.Domain.Name
+	h.Spec.Openstack.Auth.Project.Name = defopenstack.Opts.Project.Name
+	h.Spec.Openstack.Auth.Project.Domain.Name = defopenstack.Opts.Project.Domain.Name
+	return nil
+}
+
+func (h *Helper) initOpenstackIdentities() error {
+	if h.Spec.Framework.Name == "" {
+		return fmt.Errorf("framework: framework name is not set")
+	}
+
+	h.Spec.Openstack.Project.Name = h.Spec.Framework.Name
+	h.Spec.Openstack.User.Name = h.Spec.Framework.Name
+	for i, role := range h.Spec.Openstack.Roles {
+		if role.Name == "_member_" {
+			h.Spec.Openstack.Roles[i].User = h.Spec.Framework.Name
+		}
+	}
+
+	return nil
+}
+
+func (h *Helper) initKubernetesConf() error {
+	err := h.initRancherAuth()
+	if err != nil {
+		log.Errorf("framework: failed to init rancher auth(%v)", err)
+		return err
+	}
+
+	h.initKubernetesMirrorRegistries()
+	if h.Spec.Framework.Name != "" {
+		h.Spec.Kubernetes.Name = h.Spec.Framework.Name
+		return nil
+	}
+
+	return fmt.Errorf("framework: framework name is not set")
+}
+
+func (h *Helper) initRancherAuth() error {
+	err := defrancher.InitGlobalAuthIdentities()
+	if err != nil {
+		log.Errorf("framework: failed to init rancher auth identities(%v)", err)
+		return err
+	}
+
+	h.Spec.Rancher.Url = defrancher.Url
+	h.Spec.Rancher.Token = defrancher.Token
+	return nil
+}
+
+func (h *Helper) initKubernetesMirrorRegistries() {
+	for i := range h.Spec.Kubernetes.Registry.Mirrors {
+		h.Spec.Kubernetes.Registry.Mirrors[i].To = fmt.Sprintf(
+			"%s://%s:%d",
+			h.Spec.Kubernetes.Registry.Protocol,
+			base.DataCenterVip,
+			h.Spec.Kubernetes.Registry.Port,
+		)
+	}
 }
 
 func (h *Helper) initClis() error {
@@ -62,7 +202,7 @@ func (h *Helper) initClis() error {
 
 func (h *Helper) ShowConfig() {
 	b, _ := json.Marshal(h.Spec)
-	log.Infof("loaded config: %s", string(b))
+	log.Infof("framework: spec %s", string(b))
 }
 
 func (h *Helper) initOpenstackCli() error {
@@ -75,15 +215,10 @@ func (h *Helper) initOpenstackCli() error {
 }
 
 func (h *Helper) initRancherCli() error {
-	err := defrancher.InitGlobalAuthIdentities()
-	if err != nil {
-		log.Errorf("framework: failed to init rancher auth identities(%v)", err)
-		return err
-	}
-
+	var err error
 	h.Rancher, err = rancher.NewHelper(
-		rancher.Url(defrancher.Url),
-		rancher.AuthToken(defrancher.Token),
+		rancher.Url(h.Spec.Rancher.Url),
+		rancher.AuthToken(h.Spec.Rancher.Token),
 	)
 	if err != nil {
 		log.Errorf("framework: failed to init rancher helper: %s", err.Error())
@@ -119,7 +254,7 @@ func (h *Helper) ApplyOpenstackResources() error {
 		return err
 	}
 
-	err = h.createRouterOnNetworks()
+	err = h.createRouterToNetworks()
 	if err != nil {
 		return err
 	}

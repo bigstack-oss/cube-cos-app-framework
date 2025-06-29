@@ -8,7 +8,7 @@ import (
 	log "go-micro.dev/v5/logger"
 )
 
-func (h *Helper) createRouterOnNetworks() error {
+func (h *Helper) createRouterToNetworks() error {
 	for i, r := range h.Spec.Openstack.Routers {
 		true := true
 		net, err := h.Openstack.GetNetworkByName(networks.ListOpts{Name: r.Network.Name, Shared: &true})

@@ -1,8 +1,6 @@
 package runtime
 
 import (
-	"fmt"
-
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/http"
 	bslog "github.com/bigstack-oss/bigstack-dependency-go/pkg/log"
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/openstack/v2"
@@ -13,21 +11,7 @@ import (
 	log "go-micro.dev/v5/logger"
 )
 
-func Init() error {
-	err := initIdentities()
-	if err != nil {
-		return err
-	}
-
-	err = initDependencies()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func initIdentities() error {
+func InitSystemIdentities() error {
 	var err error
 	base.SystemSeed, err = cubecos.GetSystemSeed()
 	if err != nil {
@@ -62,58 +46,7 @@ func initIdentities() error {
 	return nil
 }
 
-func initDependencies() error {
-	err := newGlobalHelpers()
-	if err != nil {
-		return err
-	}
-
-	err = newAuthIdentities()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func newGlobalHelpers() error {
-	err := newGlobalLogHelper()
-	if err != nil {
-		return fmt.Errorf("runtime: failed to init logger(%v)", err)
-	}
-
-	err = newGlobalHttpHelper()
-	if err != nil {
-		log.Errorf("runtime: failed to init http helper(%v)", err)
-		return err
-	}
-
-	err = newGlobalOpenstackHelper()
-	if err != nil {
-		log.Errorf("runtime: failed to init openstack helper(%v)", err)
-		return err
-	}
-
-	err = newGlobalTerraformHelper()
-	if err != nil {
-		log.Errorf("runtime: failed to init terraform helper(%v)", err)
-		return err
-	}
-
-	return nil
-}
-
-func newAuthIdentities() error {
-	err := newOpenstackAuthIdentities()
-	if err != nil {
-		log.Errorf("runtime: failed to init openstack auth identities(%v)", err)
-		return err
-	}
-
-	return nil
-}
-
-func newGlobalLogHelper() error {
+func NewGlobalLogHelper() error {
 	return bslog.NewGlobalHelper(
 		bslog.File(base.LogPath),
 		bslog.Level(2),
@@ -124,7 +57,11 @@ func newGlobalLogHelper() error {
 	)
 }
 
-func newGlobalOpenstackHelper() error {
+func NewGlobalHttpHelper() error {
+	return http.NewGlobalHelper()
+}
+
+func NewGlobalOpenstackHelper() error {
 	return openstack.NewGlobalHelper(
 		openstack.AuthSource("file"),
 		openstack.AuthFile(base.EtcOpenstackAuth),
@@ -132,18 +69,14 @@ func newGlobalOpenstackHelper() error {
 	)
 }
 
-func newGlobalHttpHelper() error {
-	return http.NewGlobalHelper()
-}
-
-func newGlobalTerraformHelper() error {
+func NewGlobalTerraformHelper() error {
 	return bsterraform.NewGlobalHelper(
 		bsterraform.WorkingDir(base.TerrformWorkingDir),
 		bsterraform.Version(base.TerraformVersion),
 	)
 }
 
-func newOpenstackAuthIdentities() error {
+func NewOpenstackAuthIdentities() error {
 	defopenstack.Opts.Auth.File = base.EtcOpenstackAuth
 	defopenstack.Opts.Auth.EnableAutoRenew = true
 	openstack.ParseAuthFile(&defopenstack.Opts)

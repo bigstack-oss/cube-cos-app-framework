@@ -8,6 +8,7 @@ import (
 
 var (
 	DefaultSpec = Spec{
+		Framework: Framework{},
 		Kubernetes: Kubernetes{
 			Name:    "app-framework",
 			Config:  "kubeconfig",
@@ -300,6 +301,8 @@ var (
 )
 
 type Spec struct {
-	Openstack  `yaml:"openstack"`
-	Kubernetes `yaml:"kubernetes"`
+	Framework  `json:"framework"`
+	Openstack  `json:"openstack"`
+	Rancher    `json:"rancher"`
+	Kubernetes `json:"kubernetes"`
 }

@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/bigstack-oss/cube-cos-app-framework/cmd/install"
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/definition/base"
+	"github.com/bigstack-oss/cube-cos-app-framework/internal/runtime"
 	"github.com/spf13/cobra"
 )
 
@@ -14,6 +15,7 @@ var (
 )
 
 func init() {
+	runtime.NewGlobalLogHelper()
 	rootCmd.AddCommand(install.GetCmd())
 }
 

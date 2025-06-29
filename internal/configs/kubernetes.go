@@ -6,45 +6,45 @@ import (
 )
 
 type Kubernetes struct {
-	Version  string `yaml:"version"`
-	Name     string `yaml:"name"`
-	Cloud    `yaml:"cloud"`
-	Network  `yaml:"network"`
-	Master   Machine `yaml:"master"`
-	Worker   Machine `yaml:"worker"`
-	Plugins  `yaml:"plugins"`
-	Registry `yaml:"registry"`
-	Config   string `yaml:"config"`
+	Version  string `json:"version"`
+	Name     string `json:"name"`
+	Cloud    `json:"cloud"`
+	Network  `json:"network"`
+	Master   Machine `json:"master"`
+	Worker   Machine `json:"worker"`
+	Plugins  `json:"plugins"`
+	Registry `json:"registry"`
+	Config   string `json:"config"`
 }
 
 type Cloud struct {
-	Provider   string                   `yaml:"provider"`
-	Credential *rancher.CloudCredential `yaml:"credential"`
+	Provider   string                   `json:"provider"`
+	Credential *rancher.CloudCredential `json:"credential"`
 }
 
 type Machine struct {
-	Name     string `yaml:"name"`
-	Quantity int    `yaml:"quantity"`
-	Flavor   `yaml:"flavor"`
+	Name     string `json:"name"`
+	Quantity int    `json:"quantity"`
+	Flavor   `json:"flavor"`
 }
 
 type Plugins struct {
-	Helm        `yaml:"helm"`
-	Crds        []string `yaml:"crds"`
-	Controllers []string `yaml:"controllers"`
+	Helm        `json:"helm"`
+	Crds        []string `json:"crds"`
+	Controllers []string `json:"controllers"`
 }
 
 type Helm struct {
-	Charts []helm.Chart `yaml:"charts"`
+	Charts []helm.Chart `json:"charts"`
 }
 
 type Registry struct {
-	Protocol string   `yaml:"protocol"`
-	Port     int      `yaml:"defaultPort"`
-	Mirrors  []Mirror `yaml:"mirrors"`
+	Protocol string   `json:"protocol"`
+	Port     int      `json:"defaultPort"`
+	Mirrors  []Mirror `json:"mirrors"`
 }
 
 type Mirror struct {
-	Hostname string `yaml:"hostname"`
-	To       string `yaml:"to"`
+	Hostname string `json:"hostname"`
+	To       string `json:"to"`
 }

@@ -8,122 +8,122 @@ import (
 )
 
 type Openstack struct {
-	Auth           `yaml:"auth"`
-	Project        *projects.Project `yaml:"project"`
-	User           `yaml:"user"`
-	Roles          []Role          `yaml:"roles"`
-	Routers        []Router        `yaml:"routers"`
-	Networks       []Network       `yaml:"networks"`
-	FloatingIpPool string          `yaml:"floatingIpPool"`
-	EndpointType   string          `yaml:"endpointType"`
-	SecurityGroups []SecurityGroup `yaml:"securityGroups"`
-	Flavor         `yaml:"flavor"`
-	Image          `yaml:"image"`
-	SSH            `yaml:"ssh"`
+	Auth           `json:"auth"`
+	Project        *projects.Project `json:"project"`
+	User           `json:"user"`
+	Roles          []Role          `json:"roles"`
+	Routers        []Router        `json:"routers"`
+	Networks       []Network       `json:"networks"`
+	FloatingIpPool string          `json:"floatingIpPool"`
+	EndpointType   string          `json:"endpointType"`
+	SecurityGroups []SecurityGroup `json:"securityGroups"`
+	Flavor         `json:"flavor"`
+	Image          `json:"image"`
+	SSH            `json:"ssh"`
 }
 
 type Auth struct {
-	Type     string `yaml:"type"`
-	Url      string `yaml:"url"`
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
-	Token    string `yaml:"token"`
-	Project  `yaml:"project"`
+	Type     string `json:"type"`
+	Url      string `json:"url"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Token    string `json:"token"`
+	Project  `json:"project"`
 }
 
 type Project struct {
-	ID     string `yaml:"id"`
-	Name   string `yaml:"name"`
-	Domain `yaml:"domain"`
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Domain `json:"domain"`
 }
 
 type Domain struct {
-	ID   string `yaml:"id"`
-	Name string `yaml:"name"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type User struct {
-	ID       string `yaml:"id"`
-	Name     string `yaml:"name"`
-	Password string `yaml:"password"`
-	Domain   `yaml:"domain"`
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Password string `json:"password"`
+	Domain   `json:"domain"`
 }
 
 type Role struct {
-	Name string `yaml:"name"`
-	User string `yaml:"user"`
+	Name string `json:"name"`
+	User string `json:"user"`
 }
 
 type Router struct {
-	Name         string `yaml:"name"`
-	Network      `yaml:"network"`
-	Subnets      []Subnet `yaml:"subnets"`
-	AdminStateUp bool     `yaml:"adminStateUp"`
+	Name         string `json:"name"`
+	Network      `json:"network"`
+	Subnets      []Subnet `json:"subnets"`
+	AdminStateUp bool     `json:"adminStateUp"`
 }
 
 type Network struct {
-	ID           string   `yaml:"id"`
-	Name         string   `yaml:"name"`
-	Cni          string   `yaml:"cni"`
-	IpVersion    int      `yaml:"ipVersion"`
-	Subnets      []Subnet `yaml:"subnets"`
-	AdminStateUp bool     `yaml:"adminStateUp"`
-	Management   string   `yaml:"management"`
-	Public       string   `yaml:"public"`
-	Shared       bool     `yaml:"shared"`
+	ID           string   `json:"id"`
+	Name         string   `json:"name"`
+	Cni          string   `json:"cni"`
+	IpVersion    int      `json:"ipVersion"`
+	Subnets      []Subnet `json:"subnets"`
+	AdminStateUp bool     `json:"adminStateUp"`
+	Management   string   `json:"management"`
+	Public       string   `json:"public"`
+	Shared       bool     `json:"shared"`
 }
 
 type Subnet struct {
-	ID              string                   `yaml:"id"`
-	Name            string                   `yaml:"name"`
-	IpVersion       gophercloud.IPVersion    `yaml:"ipVersion"`
-	CIDR            string                   `yaml:"cidr"`
-	GatewayIP       string                   `yaml:"gatewayIp"`
-	EnableDHCP      bool                     `yaml:"enableDhcp"`
-	AllocationPools []subnets.AllocationPool `yaml:"allocationPools"`
-	HostRoutes      []subnets.HostRoute      `yaml:"hostRoutes"`
-	PortIp          string                   `yaml:"portIp"`
+	ID              string                   `json:"id"`
+	Name            string                   `json:"name"`
+	IpVersion       gophercloud.IPVersion    `json:"ipVersion"`
+	CIDR            string                   `json:"cidr"`
+	GatewayIP       string                   `json:"gatewayIp"`
+	EnableDHCP      bool                     `json:"enableDhcp"`
+	AllocationPools []subnets.AllocationPool `json:"allocationPools"`
+	HostRoutes      []subnets.HostRoute      `json:"hostRoutes"`
+	PortIp          string                   `json:"portIp"`
 }
 
 type AllocationPool struct {
-	Start string `yaml:"start"`
-	End   string `yaml:"end"`
+	Start string `json:"start"`
+	End   string `json:"end"`
 }
 
 type SecurityGroup struct {
-	ID    string `yaml:"id"`
-	Name  string `yaml:"name"`
-	Rules []Rule `yaml:"rules"`
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Rules []Rule `json:"rules"`
 }
 
 type Rule struct {
-	Description string              `yaml:"description"`
-	Direction   rules.RuleDirection `yaml:"direction"`
-	Protocol    rules.RuleProtocol  `yaml:"protocol"`
-	EtherType   rules.RuleEtherType `yaml:"etherType"`
-	CIDR        string              `yaml:"cidr"`
-	PortRange   `yaml:"portRange"`
+	Description string              `json:"description"`
+	Direction   rules.RuleDirection `json:"direction"`
+	Protocol    rules.RuleProtocol  `json:"protocol"`
+	EtherType   rules.RuleEtherType `json:"etherType"`
+	CIDR        string              `json:"cidr"`
+	PortRange   `json:"portRange"`
 }
 
 type PortRange struct {
-	Min int `yaml:"min"`
-	Max int `yaml:"max"`
+	Min int `json:"min"`
+	Max int `json:"max"`
 }
 
 type Flavor struct {
-	ID      string `yaml:"id"`
-	Name    string `yaml:"name"`
-	VCPUs   int    `yaml:"vcpus"`
-	RamMiB  int    `yaml:"ramMiB"`
-	DiskGiB int    `yaml:"diskGiB"`
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	VCPUs   int    `json:"vcpus"`
+	RamMiB  int    `json:"ramMiB"`
+	DiskGiB int    `json:"diskGiB"`
 }
 
 type Image struct {
-	ID   string `yaml:"id"`
-	Name string `yaml:"name"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type SSH struct {
-	User string `yaml:"user"`
-	Port int    `yaml:"port"`
+	User string `json:"user"`
+	Port int    `json:"port"`
 }
