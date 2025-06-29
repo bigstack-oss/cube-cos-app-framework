@@ -3,6 +3,8 @@ package configs
 type Framework struct {
 	Name     string `json:"name"`
 	Networks `json:"network"`
+	Os       `json:"os"`
+	Quantity `json:"replicas"`
 }
 
 type Networks struct {
@@ -10,6 +12,16 @@ type Networks struct {
 	Public     string `json:"public"`
 	Management string `json:"management"`
 	HostRoute  `json:"hostRoute"`
+}
+
+type Os struct {
+	Image  string `json:"image"`
+	Flavor string `json:"flavor"`
+}
+
+type Quantity struct {
+	Master int `json:"master"`
+	Worker int `json:"worker"`
 }
 
 type HostRoute struct {

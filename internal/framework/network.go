@@ -5,7 +5,6 @@ import (
 
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/openstack/v2"
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/definition/base"
-	defopenstack "github.com/bigstack-oss/cube-cos-app-framework/internal/definition/openstack"
 	"github.com/gophercloud/gophercloud/v2/openstack/sharedfilesystems/v2/sharenetworks"
 	log "go-micro.dev/v5/logger"
 )
@@ -47,12 +46,12 @@ func (h *Helper) isShareNetworkExist(name string) bool {
 
 func (h *Helper) newOpenstackCliByProject(project string) (*openstack.Helper, error) {
 	return openstack.NewHelper(
-		openstack.AuthType(defopenstack.Opts.Auth.Type),
-		openstack.AuthUrl(defopenstack.Opts.Auth.Url),
+		openstack.AuthType(h.Spec.Openstack.Auth.Type),
+		openstack.AuthUrl(h.Spec.Openstack.Auth.Url),
 		openstack.ProjectName(project),
-		openstack.ProjectDomainName(defopenstack.Opts.Auth.Project.Domain.Name),
-		openstack.Username(defopenstack.Opts.Auth.Username),
-		openstack.Password(defopenstack.Opts.Auth.Password),
+		openstack.ProjectDomainName(h.Spec.Openstack.Auth.Project.Domain.Name),
+		openstack.Username(h.Spec.Openstack.Auth.Username),
+		openstack.Password(h.Spec.Openstack.Auth.Password),
 	)
 }
 

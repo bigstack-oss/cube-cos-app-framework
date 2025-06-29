@@ -111,7 +111,7 @@ func (h *Helper) initOpenstackConf() error {
 		return err
 	}
 
-	err = h.initOpenstackIdentities()
+	err = h.initOpenstackParams()
 	if err != nil {
 		log.Errorf("framework: failed to init openstack identities(%v)", err)
 		return err
@@ -131,7 +131,7 @@ func (h *Helper) initOpenstackAuth() error {
 	return nil
 }
 
-func (h *Helper) initOpenstackIdentities() error {
+func (h *Helper) initOpenstackParams() error {
 	if h.Spec.Framework.Name == "" {
 		return fmt.Errorf("framework: framework name is not set")
 	}
@@ -142,6 +142,23 @@ func (h *Helper) initOpenstackIdentities() error {
 		if role.Name == "_member_" {
 			h.Spec.Openstack.Roles[i].User = h.Spec.Framework.Name
 		}
+	}
+
+	if h.Spec.Framework.Os.Image != "" {
+		h.Spec.Openstack.Image.Name = h.Spec.Framework.Os.Image
+	}
+
+	if h.Spec.Framework.Os.Flavor != "" {
+		h.Spec.Kubernetes.Master.Flavor.Name = h.Spec.Framework.Os.Flavor
+		h.Spec.Kubernetes.Worker.Flavor.Name = h.Spec.Framework.Os.Flavor
+		h.Spec.Openstack.Flavor.Name = h.Spec.Framework.Os.Flavor
+	}
+
+	if h.Spec.Framework.Quantity.Master != 0 {
+		h.Spec.Kubernetes.Master.Quantity = h.Spec.Framework.Quantity.Master
+	}
+	if h.Spec.Framework.Quantity.Worker != 0 {
+		h.Spec.Kubernetes.Worker.Quantity = h.Spec.Framework.Quantity.Worker
 	}
 
 	return nil
