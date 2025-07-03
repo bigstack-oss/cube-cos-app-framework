@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/bigstack-oss/cube-cos-app-framework/internal/kubernetes"
-	"github.com/bigstack-oss/cube-cos-app-framework/internal/rancher"
+	"github.com/bigstack-oss/bigstack-dependency-go/pkg/kubernetes"
+	"github.com/bigstack-oss/bigstack-dependency-go/pkg/rancher"
 	"github.com/gophercloud/gophercloud/v2/openstack/sharedfilesystems/v2/sharenetworks"
 	"github.com/pkg/errors"
 	log "go-micro.dev/v5/logger"
@@ -25,10 +25,11 @@ import (
 func (h *Helper) saveContentToLocal(config []byte, filename string) error {
 	err := os.WriteFile(filename, config[2:], 0644)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to write kube config to file: %s", filename)
+		log.Errorf("framework: failed to write kube config to %s(%v)", filename, err)
+		return err
 	}
 
-	log.Infof("Successfully saved kube config to file: %s", filename)
+	log.Infof("rancher: kube config save to %s", filename)
 	return nil
 }
 
@@ -39,7 +40,7 @@ func (h *Helper) applyKubernetes(machinePool map[string]rancher.OpenstackMachine
 		return nil, err
 	}
 
-	log.Infof("kubernetes cluster created successfully (%s %s)", cluster.Name, cluster.Id)
+	log.Infof("rancher: cluster is created successfully (%s %s)", cluster.Name, cluster.Id)
 	return cluster, nil
 }
 
@@ -200,7 +201,7 @@ func (h *Helper) applyPreflightComponentsForCharts() error {
 func (h *Helper) initKubernetesClient() error {
 	var err error
 
-	h.Kubernetes, err = kubernetes.NewClient(
+	h.Kubernetes, err = kubernetes.NewHelper(
 		kubernetes.AuthType(kubernetes.OutOfClusterAuth),
 		kubernetes.AuthFile(h.Spec.Kubernetes.Config),
 	)
@@ -231,7 +232,7 @@ func (h *Helper) applyCsiManilaSecret() error {
 		},
 	})
 	if err == nil {
-		log.Info("Successfully created csi manila secrets")
+		log.Info("kubernetes: csi manila secrets is created successfully")
 		return nil
 	}
 
@@ -248,7 +249,11 @@ func (h *Helper) applyCsiManilaStorageClass() error {
 	shareNetName := fmt.Sprintf("share_net-%s_private-k8s", h.Spec.Openstack.Project.Name)
 	shareNet, err := h.Openstack.GetShareNetworkByName(sharenetworks.ListOpts{Name: shareNetName, ProjectID: h.Spec.Openstack.Project.ID})
 	if err != nil {
-		return errors.Wrap(err, "Failed to get share network")
+		return fmt.Errorf(
+			"failed to get share network by name %s(%v)",
+			shareNetName,
+			err,
+		)
 	}
 
 	true := true
@@ -272,7 +277,7 @@ func (h *Helper) applyCsiManilaStorageClass() error {
 		},
 	})
 	if err == nil {
-		log.Info("Successfully created csi manila storage class csi-manila-nfs")
+		log.Info("framework: storage class csi-manila-nfs is created successfully")
 		return nil
 	}
 
@@ -285,17 +290,17 @@ func (h *Helper) applyCsiManilaStorageClass() error {
 
 func (h *Helper) applyExtraControllers() error {
 	for _, controller := range h.Spec.Kubernetes.Controllers {
-		log.Infof("Applying controller: %s", controller)
+		log.Infof("framework: applying controller %s", controller)
 		file, err := os.Open(controller)
 		if err != nil {
-			log.Errorf("failed to open file: %s", err.Error())
+			log.Errorf("framework: failed to open file(%v)", err)
 			continue
 		}
 
 		defer file.Close()
 		err = h.Kubernetes.ApplyDynamicResource(file)
 		if err != nil {
-			log.Errorf("failed to apply dynamic resource: %s", err.Error())
+			log.Errorf("framework: failed to apply dynamic resource(%v)", err)
 		}
 	}
 
@@ -308,7 +313,7 @@ func (h *Helper) applyCustomResourceDefinitions() error {
 
 		docs, err := h.readDocuments(crd)
 		if err != nil {
-			log.Errorf("failed to read crd: %s", err.Error())
+			log.Errorf("framework: failed to read crd(%v)", err)
 			continue
 		}
 
@@ -359,13 +364,13 @@ func (h *Helper) waitForAllServicesToBeActive() error {
 		return err
 	}
 
-	log.Info("Waiting for all pods to be ready ...")
+	log.Info("kubernetes: waiting for all pods to be ready ...")
 	err = h.waitForAllPodsToBeReady()
 	if err != nil {
 		return err
 	}
 
-	log.Info("Waiting for all needed CRDs to be installed ...")
+	log.Info("kubernetes: waiting for all needed CRDs to be installed ...")
 	err = h.waitForNeededCrdsToBeActive()
 	if err != nil {
 		return err

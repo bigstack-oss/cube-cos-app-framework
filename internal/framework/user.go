@@ -20,7 +20,7 @@ func (h *Helper) createUser() error {
 	opts := h.genUserCreationOpts()
 	user, err := h.Openstack.CreateUser(opts)
 	if err != nil {
-		log.Errorf("framework: failed to create user(%v)", err)
+		log.Errorf("openstack: failed to create user(%v)", err)
 		return err
 	}
 

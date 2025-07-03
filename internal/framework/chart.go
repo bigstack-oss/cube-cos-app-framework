@@ -1,8 +1,10 @@
 package framework
 
 import (
-	"github.com/bigstack-oss/cube-cos-app-framework/internal/helm"
-	"github.com/pkg/errors"
+	"fmt"
+
+	"github.com/bigstack-oss/bigstack-dependency-go/pkg/helm"
+	log "go-micro.dev/v5/logger"
 )
 
 func (h *Helper) genValueOverridesCharts() ([]*helm.Chart, error) {
@@ -11,7 +13,8 @@ func (h *Helper) genValueOverridesCharts() ([]*helm.Chart, error) {
 	for _, chart := range h.Spec.Kubernetes.Helm.Charts {
 		overrideChart, err := h.overrideChartByRelease(chart.Release, chart)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Failed to override chart by release")
+			log.Errorf("framework: failed to override chart by release %s: %v", chart.Release, err)
+			return nil, err
 		}
 
 		charts = append(charts, overrideChart)
@@ -28,31 +31,31 @@ func (h *Helper) overrideChartByRelease(release string, chart helm.Chart) (*helm
 	case "cinder-csi":
 		overrideChart, err = h.overrideCsiCinderChart(chart)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Failed to generate cinder csi chart")
+			return nil, fmt.Errorf("failed to generate cinder csi chart(%v)", err)
 		}
 
 	case "manila-csi":
 		overrideChart, err = h.overrideCsiManilaChart(chart)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Failed to generate manila csi chart")
+			return nil, fmt.Errorf("failed to generate manila csi chart(%v)", err)
 		}
 
 	case "csi-driver-nfs":
 		overrideChart, err = h.overrideCsiNfsChart(chart)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Failed to generate csi driver nfs chart")
+			return nil, fmt.Errorf("failed to generate csi nfs chart(%v)", err)
 		}
 
 	case "ingress-nginx":
 		overrideChart, err = h.overrideIngressNginxChart(chart)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Failed to generate ingress nginx chart")
+			return nil, fmt.Errorf("failed to generate ingress nginx chart(%v)", err)
 		}
 
 	case "openstack-cloud-controller-manager":
 		overrideChart, err = h.overrideOpenstackCcmChart(chart)
 		if err != nil {
-			return nil, errors.Wrapf(err, "Failed to generate openstack cloud controller manager chart")
+			return nil, fmt.Errorf("failed to generate openstack ccm chart(%v)", err)
 		}
 	}
 

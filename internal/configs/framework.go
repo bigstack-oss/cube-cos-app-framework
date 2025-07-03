@@ -1,10 +1,11 @@
 package configs
 
 type Framework struct {
-	Name     string `json:"name"`
-	Networks `json:"network"`
-	Os       `json:"os"`
-	Quantity `json:"replicas"`
+	Name              string `json:"name"`
+	KubernetesVersion string `json:"kubernetesVersion"`
+	Networks          `json:"network"`
+	Os                `json:"os"`
+	Quantity          `json:"replicas"`
 }
 
 type Networks struct {

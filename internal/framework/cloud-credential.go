@@ -1,7 +1,7 @@
 package framework
 
 import (
-	"github.com/bigstack-oss/cube-cos-app-framework/internal/rancher"
+	"github.com/bigstack-oss/bigstack-dependency-go/pkg/rancher"
 	log "go-micro.dev/v5/logger"
 )
 
@@ -19,7 +19,7 @@ func (h *Helper) applyCloudCredential() error {
 	}
 
 	log.Infof(
-		"framework: cloud credential created Successfully (%s %s)",
+		"rancher: cloud credential is created successfully (%s %s)",
 		h.Spec.Kubernetes.Cloud.Credential.Name,
 		h.Spec.Kubernetes.Cloud.Credential.Id,
 	)

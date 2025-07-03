@@ -1,8 +1,8 @@
 package framework
 
 import (
-	"github.com/bigstack-oss/cube-cos-app-framework/internal/helm"
-	"github.com/bigstack-oss/cube-cos-app-framework/internal/rancher"
+	"github.com/bigstack-oss/bigstack-dependency-go/pkg/helm"
+	"github.com/bigstack-oss/bigstack-dependency-go/pkg/rancher"
 	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/projects"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/security/rules"

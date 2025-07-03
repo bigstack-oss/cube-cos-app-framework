@@ -17,12 +17,12 @@ func (h *Helper) createProject() error {
 	var err error
 	h.Spec.Openstack.Project, err = h.Openstack.CreateProject(h.Spec.Openstack.Project.Name)
 	if err != nil {
-		log.Errorf("framework: failed to create project(%v)", err)
+		log.Errorf("openstack: failed to create project(%v)", err)
 		return err
 	}
 
 	log.Infof(
-		"framework: project is applied successfully(%s %s)",
+		"openstack: project is applied successfully(%s %s)",
 		h.Spec.Openstack.Project.Name,
 		h.Spec.Openstack.Project.ID,
 	)
@@ -33,12 +33,12 @@ func (h *Helper) createProject() error {
 func (h *Helper) unlimitProjectQuotas() error {
 	err := h.unlimitProjectResourceQuotas()
 	if err != nil {
-		log.Errorf("framework: failed to unlimit resource quotas(%v)", err)
+		log.Errorf("openstack: failed to unlimit resource quotas(%v)", err)
 		return err
 	}
 
 	log.Infof(
-		"framework: resource quota us set successfully(%s %s)",
+		"openstack: resource quota us set successfully(%s %s)",
 		h.Spec.Openstack.Project.Name,
 		h.Spec.Openstack.Project.ID,
 	)
@@ -49,17 +49,17 @@ func (h *Helper) unlimitProjectQuotas() error {
 func (h *Helper) assignUserToProject() error {
 	memberRoles, err := h.getMemberAndRoleIdPairs()
 	if err != nil {
-		log.Errorf("framework: failed to get member and role id pairs(%v)", err)
+		log.Errorf("openstack: failed to get member and role id pairs(%v)", err)
 		return err
 	}
 
 	err = h.applyMembersToProject(memberRoles)
 	if err != nil {
-		log.Errorf("framework: failed to apply members to project(%v)", err)
+		log.Errorf("openstack: failed to apply members to project(%v)", err)
 		return err
 	}
 
-	log.Info("framework: users and roles added to project successfully")
+	log.Info("openstack: users and roles added to project successfully")
 	return nil
 }
 

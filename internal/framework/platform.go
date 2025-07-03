@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/bigstack-oss/bigstack-dependency-go/pkg/helm"
+	"github.com/bigstack-oss/bigstack-dependency-go/pkg/kubernetes"
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/openstack/v2"
+	"github.com/bigstack-oss/bigstack-dependency-go/pkg/rancher"
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/configs"
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/definition/base"
 	defopenstack "github.com/bigstack-oss/cube-cos-app-framework/internal/definition/openstack"
 	defrancher "github.com/bigstack-oss/cube-cos-app-framework/internal/definition/rancher"
-	"github.com/bigstack-oss/cube-cos-app-framework/internal/helm"
-	"github.com/bigstack-oss/cube-cos-app-framework/internal/kubernetes"
-	"github.com/bigstack-oss/cube-cos-app-framework/internal/rancher"
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/runtime"
 	log "go-micro.dev/v5/logger"
 )
@@ -292,57 +292,46 @@ func (h *Helper) ApplyOpenstackResources() error {
 func (h *Helper) ApplyKubernetesResources() error {
 	err := h.applyCloudCredential()
 	if err != nil {
-		log.Errorf("failed to apply cloud credential: %s", err.Error())
 		return err
 	}
 
 	pools, err := h.applyOpenstackMachinePools()
 	if err != nil {
-		log.Errorf("failed to apply openstack machine pools: %s", err.Error())
 		return err
 	}
 
 	cluster, err := h.applyKubernetes(pools)
 	if err != nil {
-		log.Errorf("failed to apply kubernetes: %s", err.Error())
 		return err
 	}
 
-	log.Infof("waiting for kubernetes cluster %s to be active", cluster.Name)
 	status, err := h.Rancher.WaitKubernetesActive(cluster.Name)
 	if err != nil {
-		log.Errorf("failed to wait kubernetes status: %s", err.Error())
 		return err
 	}
 
 	config, err := h.Rancher.GetKubernetesConfig(status.ClusterName)
 	if err != nil {
-		log.Errorf("failed to get kubernetes config: %s", err.Error())
 		return err
 	}
 
-	h.Spec.Kubernetes.Config = "kubeconfig"
 	err = h.saveContentToLocal(config, h.Spec.Kubernetes.Config)
 	if err != nil {
-		log.Errorf("failed to save content to local: %s", err.Error())
 		return err
 	}
 
 	err = h.waitForAllServicesToBeActive()
 	if err != nil {
-		log.Errorf("failed to wait for all services to be active: %s", err.Error())
 		return err
 	}
 
 	err = h.applyPreflightComponentsForCharts()
 	if err != nil {
-		log.Errorf("failed to apply preflight components for charts: %s", err.Error())
 		return err
 	}
 
 	err = h.applyInternalServiceCharts()
 	if err != nil {
-		log.Errorf("failed to apply internal service charts: %s", err.Error())
 		return err
 	}
 

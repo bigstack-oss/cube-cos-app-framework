@@ -13,19 +13,19 @@ func (h *Helper) createRouterToNetworks() error {
 		true := true
 		net, err := h.Openstack.GetNetworkByName(networks.ListOpts{Name: r.Network.Name, Shared: &true})
 		if err != nil {
-			log.Errorf("framework: failed to get network %s(%v)", r.Network.Name, err)
+			log.Errorf("openstack: failed to get network %s(%v)", r.Network.Name, err)
 			return err
 		}
 
 		router, err := h.Openstack.CreateRouter(h.genRouterCreationOpts(r, net.ID))
 		if err != nil {
-			log.Errorf("framework: failed to create router %s(%v)", r.Name, err)
+			log.Errorf("openstack: failed to create router %s(%v)", r.Name, err)
 			return err
 		}
 
 		h.Spec.Openstack.Routers[i].ID = router.ID
 		h.attachSubnetsToRouter(&h.Spec.Openstack.Routers[i])
-		log.Infof("framework: router is created successfully (%s %s)", router.Name, router.ID)
+		log.Infof("openstack: router is created successfully (%s %s)", router.Name, router.ID)
 	}
 
 	return nil

@@ -1,7 +1,7 @@
 package framework
 
 import (
-	"github.com/bigstack-oss/cube-cos-app-framework/internal/helm"
+	"github.com/bigstack-oss/bigstack-dependency-go/pkg/helm"
 )
 
 func (h *Helper) overrideCsiManilaChart(chart helm.Chart) (*helm.Chart, error) {

@@ -30,7 +30,7 @@ func (h *Helper) createShareFsNetworks() error {
 		}
 
 		log.Infof(
-			"share network created successfully (%s %s)",
+			"openstack: share network is created successfully (%s %s)",
 			createdShareNet.Name,
 			createdShareNet.ID,
 		)

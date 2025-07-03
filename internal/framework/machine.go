@@ -4,22 +4,24 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/bigstack-oss/cube-cos-app-framework/internal/rancher"
+	"github.com/bigstack-oss/bigstack-dependency-go/pkg/rancher"
 	log "go-micro.dev/v5/logger"
 )
 
 func (h *Helper) applyOpenstackMachinePools() (map[string]rancher.OpenstackMachineResponse, error) {
 	masters, err := h.applyMasterMachinePool()
 	if err != nil {
+		log.Errorf("rancher: failed to apply master machine pool(%v)", err)
 		return nil, err
 	}
 
 	workers, err := h.applyWorkerMachinePool()
 	if err != nil {
+		log.Errorf("rancher: failed to apply worker machine pool(%v)", err)
 		return nil, err
 	}
 
-	log.Infof("openstack machine pools created successfully (%s %s | %s %s)", "master", masters.Name, "worker", workers.Name)
+	log.Infof("rancher: openstack machine pools created successfully (%s %s | %s %s)", "master", masters.Name, "worker", workers.Name)
 	return map[string]rancher.OpenstackMachineResponse{
 		"master": *masters,
 		"worker": *workers,
@@ -29,6 +31,7 @@ func (h *Helper) applyOpenstackMachinePools() (map[string]rancher.OpenstackMachi
 func (h *Helper) applyMasterMachinePool() (*rancher.OpenstackMachineResponse, error) {
 	machinePool, err := h.Rancher.CreateOpenstackMachine(h.genMasterMachineSpec())
 	if err != nil {
+		log.Errorf("rancher: failed to apply master machine pool(%v)", err)
 		return nil, err
 	}
 
@@ -62,6 +65,7 @@ func (h *Helper) genMasterMachineSpec() *rancher.OpenstackMachine {
 func (h *Helper) applyWorkerMachinePool() (*rancher.OpenstackMachineResponse, error) {
 	machinePool, err := h.Rancher.CreateOpenstackMachine(h.genWorkerMachineSpec())
 	if err != nil {
+		log.Errorf("rancher: failed to apply worker machine pool(%v)", err)
 		return nil, err
 	}
 

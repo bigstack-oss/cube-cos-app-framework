@@ -1,8 +1,8 @@
 package configs
 
 import (
-	"github.com/bigstack-oss/cube-cos-app-framework/internal/helm"
-	"github.com/bigstack-oss/cube-cos-app-framework/internal/rancher"
+	"github.com/bigstack-oss/bigstack-dependency-go/pkg/helm"
+	"github.com/bigstack-oss/bigstack-dependency-go/pkg/rancher"
 )
 
 type Kubernetes struct {

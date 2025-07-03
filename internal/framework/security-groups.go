@@ -14,11 +14,11 @@ func (h *Helper) createNetworkWithSubnets() error {
 	for i, n := range h.Spec.Openstack.Networks {
 		network, err := h.Openstack.CreateNetwork(h.genNetworkCreationOpts(n))
 		if err != nil {
-			log.Errorf("framework: failed to create network %s(%v)", n.Name, err)
+			log.Errorf("openstack: failed to create network %s(%v)", n.Name, err)
 			return err
 		}
 
-		log.Infof("framework: network is created successfully (%s %s)", network.Name, network.ID)
+		log.Infof("openstack: network is created successfully (%s %s)", network.Name, network.ID)
 		h.Spec.Openstack.Networks[i].ID = network.ID
 		err = h.createSubnetsOnNetwork(&h.Spec.Openstack.Networks[i])
 		if err != nil {
@@ -59,7 +59,7 @@ func (h *Helper) createSecurityGroupWithRules() error {
 			continue
 		}
 
-		log.Infof("framework: security group is created successfully (%s %s)", securityGroup.Name, securityGroup.ID)
+		log.Infof("openstack: security group is created successfully (%s %s)", securityGroup.Name, securityGroup.ID)
 		h.deleteDefaultEgressRuleIfNeeded(securityGroup)
 		h.applyRulesToSecurityGroup(s.Rules, securityGroup.ID)
 	}
@@ -122,7 +122,7 @@ func (h *Helper) applyRulesToSecurityGroup(rulesToCreate []configs.Rule, securit
 		})
 		if err == nil {
 			log.Infof(
-				"security group rule attached successfully (%s %s %d %d)",
+				"openstack: security group rule attached successfully (%s %s %d %d)",
 				rule.Direction,
 				rule.Protocol,
 				rule.PortRange.Min,
@@ -143,12 +143,12 @@ func (h *Helper) createSubnetsOnNetwork(n *configs.Network) error {
 			h.genSubnetCreationOpts(s, n.ID),
 		)
 		if err != nil {
-			log.Errorf("framework: failed to create subnet %s(%v)", s.Name, err)
+			log.Errorf("openstack: failed to create subnet %s(%v)", s.Name, err)
 			return err
 		}
 
 		n.Subnets[i].ID = subnet.ID
-		log.Infof("subnet created successfully (%s %s)", subnet.Name, subnet.ID)
+		log.Infof("openstack: subnet is created successfully (%s %s)", subnet.Name, subnet.ID)
 	}
 
 	return nil

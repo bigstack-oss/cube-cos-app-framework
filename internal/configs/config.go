@@ -1,7 +1,7 @@
 package configs
 
 import (
-	"github.com/bigstack-oss/cube-cos-app-framework/internal/helm"
+	"github.com/bigstack-oss/bigstack-dependency-go/pkg/helm"
 	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/projects"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/subnets"
 )
@@ -11,7 +11,7 @@ var (
 		Framework: Framework{},
 		Kubernetes: Kubernetes{
 			Name:    "app-framework",
-			Config:  "kubeconfig",
+			Config:  "/opt/appfw/kubeconfig",
 			Version: "v1.32.4+rke2r1",
 			Cloud:   Cloud{Provider: "openstack"},
 			Network: Network{Cni: "cilium"},
@@ -26,10 +26,10 @@ var (
 				Flavor:   Flavor{Name: "t2.large"},
 			},
 			Plugins: Plugins{
-				Controllers: []string{
-					"plugins/controllers/setup-snapshot-controller.yaml",
-					"plugins/controllers/rbac-snapshot-controller.yaml",
-				},
+				// Controllers: []string{
+				// 	"/opt/appfw/plugins/controllers/setup-snapshot-controller.yaml",
+				// 	"/opt/appfw/plugins/controllers/rbac-snapshot-controller.yaml",
+				// },
 				Helm: Helm{
 					Charts: []helm.Chart{
 						{
@@ -37,7 +37,7 @@ var (
 							Version:   "2.31.2",
 							Namespace: "kube-system",
 							Tgz: helm.Tgz{
-								Local: "plugins/charts/openstack-cinder-csi-2.31.2.tgz",
+								Local: "/opt/appfw/plugins/charts/openstack-cinder-csi-2.31.2.tgz",
 							},
 						},
 						{
@@ -45,7 +45,7 @@ var (
 							Version:   "2.31.1",
 							Namespace: "kube-system",
 							Tgz: helm.Tgz{
-								Local: "plugins/charts/openstack-manila-csi-2.31.1.tgz",
+								Local: "/opt/appfw/plugins/charts/openstack-manila-csi-2.31.1.tgz",
 							},
 						},
 						{
@@ -53,7 +53,7 @@ var (
 							Version:   "v4.9.0",
 							Namespace: "kube-system",
 							Tgz: helm.Tgz{
-								Local: "plugins/charts/csi-driver-nfs-v4.9.0.tgz",
+								Local: "/opt/appfw/plugins/charts/csi-driver-nfs-v4.9.0.tgz",
 							},
 						},
 						{
@@ -61,7 +61,7 @@ var (
 							Version:   "1.3.0",
 							Namespace: "kube-system",
 							Tgz: helm.Tgz{
-								Local: "plugins/charts/openstack-cloud-controller-manager-1.3.0.tgz",
+								Local: "/opt/appfw/plugins/charts/openstack-cloud-controller-manager-1.3.0.tgz",
 							},
 						},
 					},

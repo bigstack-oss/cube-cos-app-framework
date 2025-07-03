@@ -36,7 +36,7 @@ tasks:
     cmds:
       - task: buildLocalBinary
       - task: moveLocalBinaryToRemoteCos
-      - task: moveLocalConfigToRemoteCos
+      - task: movePluginsToRemoteCos
   deployRemoteE2EApi:
     cmds:
       - task: buildLocalBinary
@@ -62,9 +62,14 @@ tasks:
       - ssh {{.devCosUser}}@{{.devE2EIp}} "docker exec -i {{.devE2EContainer}} scp /opt/{{.appctl}} root@{{.devE2ENode}}:/usr/local/bin/{{.appctl}}"
       - ssh {{.devCosUser}}@{{.devE2EIp}} "docker exec -i {{.devE2EContainer}} ssh root@{{.devE2ENode}} chown -R {{.appctl}}:{{.appctl}} /usr/local/bin/{{.appctl}}"
     ignore_error: true
-  moveLocalConfigToRemoteCos:
+  movePluginsToRemoteCos:
     cmds:
-      - scp configs/{{.appctl}}.yaml.template {{.devCosUser}}@{{.devCosIp}}:/etc/cube/api/appctl.yaml
+      - ssh {{.devCosUser}}@{{.devCosIp}} "mkdir -p /opt/appfw/plugins/charts"
+      - ssh {{.devCosUser}}@{{.devCosIp}} "mkdir -p /opt/appfw/plugins/controllers"
+      - ssh {{.devCosUser}}@{{.devCosIp}} "mkdir -p /opt/appfw/plugins/crds"
+      - scp -r plugins/charts {{.devCosUser}}@{{.devCosIp}}:/opt/appfw/plugins/
+      - scp -r plugins/controllers {{.devCosUser}}@{{.devCosIp}}:/opt/appfw/plugins/
+      - scp -r plugins/crds {{.devCosUser}}@{{.devCosIp}}:/opt/appfw/plugins/
   moveLocalConfigToRemoteE2E:
     cmds:
       - scp configs/{{.appctl}}.yaml.template {{.devCosUser}}@{{.devE2EIp}}:/opt/appctl.yaml

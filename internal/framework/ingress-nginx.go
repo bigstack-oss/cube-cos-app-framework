@@ -1,7 +1,7 @@
 package framework
 
 import (
-	"github.com/bigstack-oss/cube-cos-app-framework/internal/helm"
+	"github.com/bigstack-oss/bigstack-dependency-go/pkg/helm"
 	"github.com/pkg/errors"
 	"helm.sh/helm/v3/pkg/cli/values"
 )

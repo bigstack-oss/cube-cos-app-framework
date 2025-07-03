@@ -3,7 +3,7 @@ package framework
 import (
 	"fmt"
 
-	"github.com/bigstack-oss/cube-cos-app-framework/internal/helm"
+	"github.com/bigstack-oss/bigstack-dependency-go/pkg/helm"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/subnets"
 	"github.com/pkg/errors"
