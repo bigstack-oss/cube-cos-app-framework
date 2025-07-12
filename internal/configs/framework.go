@@ -9,10 +9,15 @@ type Framework struct {
 }
 
 type Networks struct {
-	Ip         string `json:"ip"`
-	Public     string `json:"public"`
-	Management string `json:"management"`
-	HostRoute  `json:"hostRoute"`
+	Public       string `json:"public"`
+	Management   string `json:"management"`
+	HostRoute    `json:"hostRoute"`
+	LoadBalancer `json:"loadBalancer"`
+}
+
+type LoadBalancer struct {
+	Ip    string `json:"ip"`
+	Image string `json:"image"`
 }
 
 type Os struct {

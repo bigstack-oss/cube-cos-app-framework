@@ -8,7 +8,11 @@ import (
 
 var (
 	DefaultSpec = Spec{
-		Framework: Framework{},
+		Framework: Framework{
+			Networks: Networks{
+				LoadBalancer: LoadBalancer{Image: "amphora-x64-haproxy"},
+			},
+		},
 		Kubernetes: Kubernetes{
 			Name:    "app-framework",
 			Config:  "/opt/appfw/kubeconfig",

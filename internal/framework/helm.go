@@ -6,6 +6,10 @@ import (
 	log "go-micro.dev/v5/logger"
 )
 
+func (h *Helper) CheckHelmCharts() error {
+	return nil
+}
+
 func (h *Helper) applyInternalServiceCharts() error {
 	charts, err := h.genValueOverridesCharts()
 	if err != nil {

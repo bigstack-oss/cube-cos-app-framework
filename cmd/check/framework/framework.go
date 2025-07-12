@@ -16,7 +16,7 @@ func NewInstallCmd() *cobra.Command {
 		Use:   "framework",
 		Short: "",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return install()
+			return check()
 		},
 	}
 
@@ -24,25 +24,32 @@ func NewInstallCmd() *cobra.Command {
 	return cmd
 }
 
-func install() error {
+func check() error {
 	h, err := framework.NewHelper(spec)
 	if err != nil {
 		log.Errorf("framework: failed to init helper(%v)", err)
 		return err
 	}
 
-	h.PrintInfraSetupMessage()
-	err = h.ApplyOpenstackResources()
+	h.PrintInfraCheckMessage()
+	err = h.CheckOsImages()
 	if err != nil {
-		log.Errorf("framework: failed to apply openstack components(%v)", err)
 		return err
 	}
 
-	h.PrintK8sSetupMessage()
-	err = h.ApplyKubernetesResources()
+	err = h.CheckOsFlavors()
 	if err != nil {
-		log.Errorf("framework: failed to apply kubernetes components(%v)", err)
 		return err
+	}
+
+	h.PrintK8sCheckMessage()
+	err = h.CheckOciImages()
+	if err != nil {
+		return err
+	}
+
+	err = h.CheckHelmCharts()
+	if err != nil {
 	}
 
 	return nil
