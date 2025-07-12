@@ -1,12 +1,22 @@
 package framework
 
 import (
+	"os"
+
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/helm"
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/kubernetes"
 	log "go-micro.dev/v5/logger"
 )
 
 func (h *Helper) CheckHelmCharts() error {
+	for _, chart := range h.Spec.Kubernetes.Plugins.Helm.Charts {
+		_, err := os.Stat(chart.Tgz.Local)
+		if os.IsNotExist(err) {
+			log.Errorf("framework: helm chart %s not found at %s", chart.Release, chart.Tgz.Local)
+			return err
+		}
+	}
+
 	return nil
 }
 

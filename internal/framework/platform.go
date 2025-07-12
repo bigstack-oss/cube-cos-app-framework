@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/helm"
+	"github.com/bigstack-oss/bigstack-dependency-go/pkg/http"
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/kubernetes"
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/openstack/v2"
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/rancher"
@@ -17,6 +18,7 @@ import (
 )
 
 type Helper struct {
+	http       *http.Helper
 	Openstack  *openstack.Helper
 	Rancher    *rancher.Helper
 	Kubernetes *kubernetes.Helper
@@ -204,7 +206,12 @@ func (h *Helper) initKubernetesMirrorRegistries() {
 }
 
 func (h *Helper) initClis() error {
-	err := h.initOpenstackCli()
+	err := h.initHttpCli()
+	if err != nil {
+		return err
+	}
+
+	err = h.initOpenstackCli()
 	if err != nil {
 		return err
 	}
@@ -220,6 +227,15 @@ func (h *Helper) initClis() error {
 func (h *Helper) ShowConfig() {
 	b, _ := json.Marshal(h.Spec)
 	log.Infof("framework: spec %s", string(b))
+}
+
+func (h *Helper) initHttpCli() error {
+	h.http = http.GetGlobalHelper()
+	if h.http == nil {
+		return fmt.Errorf("framework: failed to get global http helper")
+	}
+
+	return nil
 }
 
 func (h *Helper) initOpenstackCli() error {

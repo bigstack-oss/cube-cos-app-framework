@@ -12,6 +12,7 @@ var (
 			Networks: Networks{
 				LoadBalancer: LoadBalancer{Image: "amphora-x64-haproxy"},
 			},
+			OciImages: []OciImage{},
 		},
 		Kubernetes: Kubernetes{
 			Name:    "app-framework",
@@ -30,10 +31,6 @@ var (
 				Flavor:   Flavor{Name: "t2.large"},
 			},
 			Plugins: Plugins{
-				// Controllers: []string{
-				// 	"/opt/appfw/plugins/controllers/setup-snapshot-controller.yaml",
-				// 	"/opt/appfw/plugins/controllers/rbac-snapshot-controller.yaml",
-				// },
 				Helm: Helm{
 					Charts: []helm.Chart{
 						{

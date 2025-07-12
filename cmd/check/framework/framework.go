@@ -50,6 +50,7 @@ func check() error {
 
 	err = h.CheckHelmCharts()
 	if err != nil {
+		return err
 	}
 
 	return nil

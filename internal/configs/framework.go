@@ -6,6 +6,7 @@ type Framework struct {
 	Networks          `json:"network"`
 	Os                `json:"os"`
 	Quantity          `json:"replicas"`
+	OciImages         []OciImage `json:"ociImages"`
 }
 
 type Networks struct {
@@ -33,6 +34,12 @@ type Quantity struct {
 type HostRoute struct {
 	GatewayIp string `json:"gatewayIp"`
 	Cidr      string `json:"cidr"`
+}
+
+type OciImage struct {
+	Space string `json:"space"`
+	Name  string `json:"name"`
+	Tag   string `json:"tag"`
 }
 
 func (f *Framework) IsPublicNetAndManagementNetSame() bool {
