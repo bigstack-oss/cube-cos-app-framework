@@ -9,10 +9,24 @@ import (
 var (
 	DefaultSpec = Spec{
 		Framework: Framework{
-			Networks: Networks{
-				LoadBalancer: LoadBalancer{Image: "amphora-x64-haproxy"},
+			Networks: Networks{},
+			OciImages: []OciImage{
+				{
+					Space: "keycloak",
+					Name:  "keycloak",
+					Tag:   "17.0.1-legacy",
+				},
+				{
+					Space: "test",
+					Name:  "nginx",
+					Tag:   "1.25.2",
+				},
 			},
-			OciImages: []OciImage{},
+			OsImages: []string{
+				"Ubuntu2404",
+				"manila-service-image",
+				"amphora-x64-haproxy",
+			},
 		},
 		Kubernetes: Kubernetes{
 			Name:    "app-framework",
@@ -296,7 +310,7 @@ var (
 				User: "ubuntu",
 				Port: 22,
 			},
-			Image: Image{Name: "ubuntu-22.04"},
+			Image: Image{Name: "Ubuntu2404"},
 		},
 	}
 )

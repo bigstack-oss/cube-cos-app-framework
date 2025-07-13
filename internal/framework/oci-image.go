@@ -22,6 +22,8 @@ type Error struct {
 
 func (h *Helper) CheckOciImages() error {
 	for _, image := range h.Spec.Framework.OciImages {
+		log.Infof("framework: checking oci image %s/%s:%s", image.Space, image.Name, image.Tag)
+
 		u := url.URL{
 			Scheme: "http",
 			Host:   fmt.Sprintf("%s:%d", base.DataCenterVip, 5080),
@@ -35,13 +37,14 @@ func (h *Helper) CheckOciImages() error {
 		}
 
 		if resp.IsError() {
-			err := fmt.Errorf("framework: has response error: %d(%s)", resp.StatusCode(), resp.String())
+			err := fmt.Errorf("oci image %s/%s not found(%d %s)", image.Space, image.Name, resp.StatusCode(), resp.String())
+			log.Errorf("framework: %v", err)
 			return err
 		}
 
 		info := resp.Result().(*ImageResp)
 		if !slices.Contains(info.Tags, image.Tag) {
-			err := fmt.Errorf("framework: oci image %s/%s:%s not found", image.Space, image.Name, image.Tag)
+			err := fmt.Errorf("framework: oci image tag %s/%s:%s not found", image.Space, image.Name, image.Tag)
 			log.Errorf("framework: %v", err)
 			return err
 		}

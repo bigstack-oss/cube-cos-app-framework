@@ -10,6 +10,8 @@ import (
 
 func (h *Helper) CheckHelmCharts() error {
 	for _, chart := range h.Spec.Kubernetes.Plugins.Helm.Charts {
+		log.Infof("framework: checking helm chart %s(%s)", chart.Release, chart.Tgz.Local)
+
 		_, err := os.Stat(chart.Tgz.Local)
 		if os.IsNotExist(err) {
 			log.Errorf("framework: helm chart %s not found at %s", chart.Release, chart.Tgz.Local)

@@ -1,7 +1,7 @@
-package install
+package check
 
 import (
-	"github.com/bigstack-oss/cube-cos-app-framework/cmd/install/framework"
+	"github.com/bigstack-oss/cube-cos-app-framework/cmd/check/framework"
 	"github.com/spf13/cobra"
 )
 
@@ -13,7 +13,7 @@ var (
 )
 
 func init() {
-	check.AddCommand(framework.NewInstallCmd())
+	check.AddCommand(framework.GetCmd())
 }
 
 func GetCmd() *cobra.Command {

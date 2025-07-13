@@ -134,8 +134,10 @@ func (h *Helper) initOpenstackAuth() error {
 }
 
 func (h *Helper) initOpenstackParams() error {
-	if h.Spec.Framework.Name == "" {
-		return fmt.Errorf("framework: framework name is not set")
+	if h.Spec.Framework.Name != "" {
+		h.Spec.Openstack.Project.Name = h.Spec.Framework.Name
+		h.Spec.Openstack.User.Name = h.Spec.Framework.Name
+		h.setUserMemberRole(h.Spec.Framework.Name)
 	}
 
 	h.Spec.Openstack.Project.Name = h.Spec.Framework.Name
@@ -174,12 +176,11 @@ func (h *Helper) initKubernetesConf() error {
 	}
 
 	h.initKubernetesMirrorRegistries()
-	if h.Spec.Framework.Name != "" {
+	if h.Spec.Framework.Name == "" {
 		h.Spec.Kubernetes.Name = h.Spec.Framework.Name
-		return nil
 	}
 
-	return fmt.Errorf("framework: framework name is not set")
+	return nil
 }
 
 func (h *Helper) initRancherAuth() error {
@@ -255,6 +256,41 @@ func (h *Helper) initRancherCli() error {
 	)
 	if err != nil {
 		log.Errorf("framework: failed to init rancher helper: %s", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (h *Helper) setUserMemberRole(name string) {
+	for i, role := range h.Spec.Openstack.Roles {
+		if role.Name == "_member_" {
+			h.Spec.Openstack.Roles[i].User = name
+			return
+		}
+	}
+}
+
+func (h *Helper) CheckPrerequisites() error {
+	h.PrintInfraCheckMessage()
+	err := h.CheckOsImages()
+	if err != nil {
+		return err
+	}
+
+	err = h.CheckOsFlavors()
+	if err != nil {
+		return err
+	}
+
+	h.PrintK8sCheckMessage()
+	err = h.CheckOciImages()
+	if err != nil {
+		return err
+	}
+
+	err = h.CheckHelmCharts()
+	if err != nil {
 		return err
 	}
 

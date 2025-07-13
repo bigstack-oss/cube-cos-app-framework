@@ -6,7 +6,9 @@ type Framework struct {
 	Networks          `json:"network"`
 	Os                `json:"os"`
 	Quantity          `json:"replicas"`
+	OsImages          []string   `json:"osImages"`
 	OciImages         []OciImage `json:"ociImages"`
+	Plugins           `json:"plugins"`
 }
 
 type Networks struct {
@@ -17,8 +19,7 @@ type Networks struct {
 }
 
 type LoadBalancer struct {
-	Ip    string `json:"ip"`
-	Image string `json:"image"`
+	Ip string `json:"ip"`
 }
 
 type Os struct {

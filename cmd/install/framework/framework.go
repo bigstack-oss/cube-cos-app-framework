@@ -20,7 +20,7 @@ func NewInstallCmd() *cobra.Command {
 		},
 	}
 
-	framework.ParseFlags(cmd, &spec)
+	framework.ParseCreationFlags(cmd, &spec)
 	return cmd
 }
 
@@ -28,6 +28,12 @@ func install() error {
 	h, err := framework.NewHelper(spec)
 	if err != nil {
 		log.Errorf("framework: failed to init helper(%v)", err)
+		return err
+	}
+
+	err = h.CheckPrerequisites()
+	if err != nil {
+		log.Errorf("framework: prerequisites check failed(%v)", err)
 		return err
 	}
 

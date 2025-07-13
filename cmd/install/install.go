@@ -8,7 +8,7 @@ import (
 var (
 	install = &cobra.Command{
 		Use:   "install",
-		Short: "Install resources",
+		Short: "Install framework or application",
 	}
 )
 
