@@ -13,7 +13,7 @@ var (
 )
 
 func init() {
-	check.AddCommand(framework.GetCmd())
+	check.AddCommand(framework.NewCheckCmd())
 }
 
 func GetCmd() *cobra.Command {

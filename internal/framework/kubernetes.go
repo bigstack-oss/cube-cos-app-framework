@@ -33,7 +33,7 @@ func (h *Helper) saveContentToLocal(config []byte, filename string) error {
 	return nil
 }
 
-func (h *Helper) applyKubernetes(machinePool map[string]rancher.OpenstackMachineResponse) (*rancher.ClusterResponse, error) {
+func (h *Helper) createKubernetes(machinePool map[string]rancher.OpenstackMachineResponse) (*rancher.ClusterResponse, error) {
 	spec := h.genKubernetesSpec(machinePool)
 	cluster, err := h.Rancher.CreateKubernetes(spec)
 	if err != nil {
@@ -42,6 +42,17 @@ func (h *Helper) applyKubernetes(machinePool map[string]rancher.OpenstackMachine
 
 	log.Infof("rancher: cluster is created successfully (%s %s)", cluster.Name, cluster.Id)
 	return cluster, nil
+}
+
+func (h *Helper) deleteKubernetes(name string) error {
+	err := h.Rancher.DeleteKubernetes(name)
+	if err != nil {
+		log.Errorf("framework: failed to delete kubernetes cluster %s(%v)", h.Spec.Kubernetes.Name, err)
+		return err
+	}
+
+	log.Infof("framework: kubernetes cluster %s is deleted successfully", h.Spec.Kubernetes.Name)
+	return nil
 }
 
 func (h *Helper) genKubernetesSpec(machinePool map[string]rancher.OpenstackMachineResponse) *rancher.Cluster {

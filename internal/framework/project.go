@@ -30,6 +30,17 @@ func (h *Helper) createProject() error {
 	return nil
 }
 
+func (h *Helper) deleteProject() error {
+	err := h.Openstack.DeleteProject(h.Spec.Openstack.Project.ID)
+	if err != nil {
+		log.Errorf("openstack: failed to delete project %s(%v)", h.Spec.Openstack.Project.Name, err)
+		return err
+	}
+
+	log.Infof("openstack: project %s is deleted successfully", h.Spec.Openstack.Project.Name)
+	return nil
+}
+
 func (h *Helper) unlimitProjectQuotas() error {
 	err := h.unlimitProjectResourceQuotas()
 	if err != nil {

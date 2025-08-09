@@ -11,12 +11,12 @@ var (
 	spec = configs.DefaultSpec
 )
 
-func NewInstallCmd() *cobra.Command {
+func NewDeleteCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "framework",
 		Short: "",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return install()
+			return delete()
 		},
 	}
 
@@ -24,30 +24,24 @@ func NewInstallCmd() *cobra.Command {
 	return cmd
 }
 
-func install() error {
+func delete() error {
 	h, err := framework.NewHelper(spec)
 	if err != nil {
 		log.Errorf("framework: failed to init helper(%v)", err)
 		return err
 	}
 
-	err = h.CheckPrerequisites()
+	h.PrintTenantDeletingMessage()
+	err = h.DeleteKubernetesResources()
 	if err != nil {
-		log.Errorf("framework: prerequisites check failed(%v)", err)
+		log.Errorf("framework: failed to delete kubernetes components(%v)", err)
 		return err
 	}
 
-	h.PrintInfraSetupMessage()
-	err = h.CreateOpenstackResources()
+	h.PrintK8sDeletingMessage()
+	err = h.DeleteOpenstackResources()
 	if err != nil {
-		log.Errorf("framework: failed to apply openstack components(%v)", err)
-		return err
-	}
-
-	h.PrintK8sSetupMessage()
-	err = h.CreateKubernetesResources()
-	if err != nil {
-		log.Errorf("framework: failed to apply kubernetes components(%v)", err)
+		log.Errorf("framework: failed to delete openstack components(%v)", err)
 		return err
 	}
 

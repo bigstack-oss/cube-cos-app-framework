@@ -39,6 +39,30 @@ func (h *Helper) createShareFsNetworks() error {
 	return nil
 }
 
+func (h *Helper) deleteShareFsNetworks() error {
+	for _, network := range h.Spec.Openstack.Networks {
+		shareNet := fmt.Sprintf("%s-%s_%s", base.ShareNetPrefix, h.Spec.Openstack.Project.Name, network.Name)
+		if !h.isShareNetworkExist(shareNet) {
+			continue
+		}
+
+		cli, err := h.newOpenstackCliByProject(h.Spec.Openstack.Project.Name)
+		if err != nil {
+			continue
+		}
+
+		err = h.Openstack.DeleteShareNetwork(cli.Share, shareNet)
+		if err != nil {
+			log.Errorf("openstack: failed to delete share network %s(%v)", shareNet, err)
+			return err
+		}
+
+		log.Infof("openstack: share network %s is deleted successfully", shareNet)
+	}
+
+	return nil
+}
+
 func (h *Helper) isShareNetworkExist(name string) bool {
 	_, err := h.Openstack.GetShareNetworkByName(sharenetworks.ListOpts{Name: name, ProjectID: h.Spec.Openstack.Project.ID})
 	return err == nil

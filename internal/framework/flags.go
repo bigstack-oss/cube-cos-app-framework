@@ -16,6 +16,11 @@ func ParseCreationFlags(cmd *cobra.Command, spec *configs.Spec) {
 	cmd.MarkFlagRequired("net.mgmt")
 }
 
+func ParseDeletionFlags(cmd *cobra.Command, spec *configs.Spec) {
+	cmd.Flags().StringVarP(&spec.Framework.Name, "name", "", spec.Framework.Name, "Name for the framework")
+	cmd.MarkFlagRequired("name")
+}
+
 func parseCommonFlags(cmd *cobra.Command, spec *configs.Spec) {
 	cmd.Flags().StringVarP(&spec.Framework.Name, "name", "", spec.Framework.Name, "Name for the framework")
 	cmd.Flags().StringVarP(&spec.Framework.Networks.Public, "net.public", "", spec.Framework.Networks.Public, "Public network for the framework")

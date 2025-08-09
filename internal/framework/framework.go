@@ -297,7 +297,7 @@ func (h *Helper) CheckPrerequisites() error {
 	return nil
 }
 
-func (h *Helper) ApplyOpenstackResources() error {
+func (h *Helper) CreateOpenstackResources() error {
 	err := h.createProject()
 	if err != nil {
 		return err
@@ -341,7 +341,7 @@ func (h *Helper) ApplyOpenstackResources() error {
 	return nil
 }
 
-func (h *Helper) ApplyKubernetesResources() error {
+func (h *Helper) CreateKubernetesResources() error {
 	err := h.applyCloudCredential()
 	if err != nil {
 		return err
@@ -352,7 +352,7 @@ func (h *Helper) ApplyKubernetesResources() error {
 		return err
 	}
 
-	cluster, err := h.applyKubernetes(pools)
+	cluster, err := h.createKubernetes(pools)
 	if err != nil {
 		return err
 	}
@@ -383,6 +383,89 @@ func (h *Helper) ApplyKubernetesResources() error {
 	}
 
 	err = h.applyInternalServiceCharts()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *Helper) DeleteOpenstackResources() error {
+	err := h.deleteInstanes()
+	if err != nil {
+		return err
+	}
+
+	err = h.deleteVolumes()
+	if err != nil {
+		return err
+	}
+
+	err = h.deleteShares()
+	if err != nil {
+		return err
+	}
+
+	err = h.deleteSecurityGroupWithRules()
+	if err != nil {
+		return err
+	}
+
+	err = h.deleteShareFsNetworks()
+	if err != nil {
+		return err
+	}
+
+	err = h.deleteLoadBalancers()
+	if err != nil {
+		return err
+	}
+
+	err = h.deleteFloatingIps()
+	if err != nil {
+		return err
+	}
+
+	err = h.deleteRouter()
+	if err != nil {
+		return err
+	}
+
+	err = h.deleteNetworkWithSubnets()
+	if err != nil {
+		return err
+	}
+
+	err = h.deleteUsers()
+	if err != nil {
+		return err
+	}
+
+	err = h.deleteProject()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *Helper) DeleteKubernetesResources() error {
+	config, err := h.Rancher.GetKubernetesConfig(h.Spec.Framework.Name)
+	if err != nil {
+		return err
+	}
+
+	err = h.saveContentToLocal(config, h.Spec.Kubernetes.Config)
+	if err != nil {
+		return err
+	}
+
+	err = h.deleteKubernetes(h.Spec.Framework.Name)
+	if err != nil {
+		return err
+	}
+
+	err = h.Rancher.WaitKubernetesDeleted(h.Spec.Framework.Name)
 	if err != nil {
 		return err
 	}

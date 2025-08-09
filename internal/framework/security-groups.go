@@ -29,6 +29,35 @@ func (h *Helper) createNetworkWithSubnets() error {
 	return nil
 }
 
+func (h *Helper) deleteNetworkWithSubnets() error {
+	for _, net := range h.Spec.Openstack.Networks {
+		opts := networks.ListOpts{Name: net.Name, ProjectID: h.Spec.Openstack.Project.ID}
+		opsNet, err := h.Openstack.GetNetworkByName(opts)
+		if err != nil {
+			log.Errorf("openstack: failed to get network %s(%v)", net.Name, err)
+			continue
+		}
+
+		subnets, err := h.Openstack.ListSubnets(subnets.ListOpts{NetworkID: opsNet.ID})
+		if err != nil {
+			log.Errorf("openstack: failed to list subnets for network %s(%v)", net.Name, err)
+			continue
+		}
+
+		for _, s := range subnets {
+			err := h.Openstack.DeleteSubnet(s.ID)
+			if err != nil {
+				log.Errorf("openstack: failed to delete subnet %s(%v)", s.Name, err)
+				continue
+			}
+
+			log.Infof("openstack: subnet %s is deleted successfully", s.Name)
+		}
+	}
+
+	return nil
+}
+
 func (h *Helper) genNetworkCreationOpts(n configs.Network) networks.CreateOpts {
 	return networks.CreateOpts{
 		ProjectID:    h.Spec.Openstack.Project.ID,
@@ -62,6 +91,20 @@ func (h *Helper) createSecurityGroupWithRules() error {
 		log.Infof("openstack: security group is created successfully (%s %s)", securityGroup.Name, securityGroup.ID)
 		h.deleteDefaultEgressRuleIfNeeded(securityGroup)
 		h.applyRulesToSecurityGroup(s.Rules, securityGroup.ID)
+	}
+
+	return nil
+}
+
+func (h *Helper) deleteSecurityGroupWithRules() error {
+	for _, s := range h.Spec.Openstack.SecurityGroups {
+		opts := groups.ListOpts{Name: s.Name, ProjectID: h.Spec.Openstack.Project.ID}
+		secGroup, err := h.Openstack.GetSecurityGroupByName(opts)
+		if err != nil {
+			continue
+		}
+
+		h.deleteSecurityGroupRules(secGroup.Rules)
 	}
 
 	return nil
@@ -134,6 +177,24 @@ func (h *Helper) applyRulesToSecurityGroup(rulesToCreate []configs.Rule, securit
 		if !gophercloud.ResponseCodeIs(err, 409) {
 			continue
 		}
+	}
+}
+
+func (h *Helper) deleteSecurityGroupRules(list []rules.SecGroupRule) {
+	for _, rule := range list {
+		err := h.Openstack.DeleteSecurityGroupRule(rule.ID)
+		if err != nil {
+			log.Errorf(
+				"openstack: failed to delete security group (%s %s %d %d)",
+				rule.Direction, rule.Protocol, rule.PortRangeMin, rule.PortRangeMax,
+			)
+			continue
+		}
+
+		log.Infof(
+			"openstack: security group rule is deleted successfully (%s %s %d %d)",
+			rule.Direction, rule.Protocol, rule.PortRangeMin, rule.PortRangeMax,
+		)
 	}
 }
 

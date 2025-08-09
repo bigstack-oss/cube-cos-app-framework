@@ -15,6 +15,6 @@ func init() {
 	framework.AddCommand(prerequisites.NewCheckCmd())
 }
 
-func GetCmd() *cobra.Command {
+func NewCheckCmd() *cobra.Command {
 	return framework
 }

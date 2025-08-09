@@ -31,6 +31,26 @@ func (h *Helper) createRouterToNetworks() error {
 	return nil
 }
 
+func (h *Helper) deleteRouter() error {
+	routers, err := h.Openstack.ListRouters(routers.ListOpts{ProjectID: h.Spec.Openstack.Project.ID})
+	if err != nil {
+		log.Errorf("openstack: failed to list routers(%v)", err)
+		return err
+	}
+
+	for _, r := range routers {
+		err := h.Openstack.DeleteRouter(r.ID)
+		if err != nil {
+			log.Errorf("openstack: failed to delete router %s(%v)", r.Name, err)
+			continue
+		}
+
+		log.Infof("openstack: router %s is deleted successfully", r.Name)
+	}
+
+	return nil
+}
+
 func (h *Helper) genRouterCreationOpts(r configs.Router, networkID string) routers.CreateOpts {
 	return routers.CreateOpts{
 		Name:         r.Name,
