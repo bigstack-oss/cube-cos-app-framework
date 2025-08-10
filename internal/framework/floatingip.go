@@ -7,7 +7,7 @@ import (
 
 func (h *Helper) deleteFloatingIps() error {
 	opts := floatingips.ListOpts{ProjectID: h.Spec.Openstack.Project.ID}
-	fips, err := h.Openstack.ListFloatingIPs(opts)
+	fips, err := h.Openstack.ListFloatingIps(opts)
 	if err != nil {
 		log.Errorf("openstack: failed to list floating IPs(%v)", err)
 		return err

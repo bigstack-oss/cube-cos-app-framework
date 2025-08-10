@@ -176,7 +176,7 @@ func (h *Helper) initKubernetesConf() error {
 	}
 
 	h.initKubernetesMirrorRegistries()
-	if h.Spec.Framework.Name == "" {
+	if h.Spec.Framework.Name != "" {
 		h.Spec.Kubernetes.Name = h.Spec.Framework.Name
 	}
 
@@ -342,7 +342,12 @@ func (h *Helper) CreateOpenstackResources() error {
 }
 
 func (h *Helper) CreateKubernetesResources() error {
-	err := h.applyCloudCredential()
+	err := h.activateOpenstackDriver()
+	if err != nil {
+		return err
+	}
+
+	err = h.applyCloudCredential()
 	if err != nil {
 		return err
 	}
@@ -426,7 +431,7 @@ func (h *Helper) DeleteOpenstackResources() error {
 		return err
 	}
 
-	err = h.deleteRouter()
+	err = h.deleteRouters()
 	if err != nil {
 		return err
 	}

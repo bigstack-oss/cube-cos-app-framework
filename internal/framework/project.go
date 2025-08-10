@@ -3,6 +3,7 @@ package framework
 import (
 	storageQuota "github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v3/quotasets"
 	computeQuota "github.com/gophercloud/gophercloud/v2/openstack/compute/v2/quotasets"
+	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/projects"
 	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/roles"
 	networkQuotas "github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/quotas"
 	log "go-micro.dev/v5/logger"
@@ -11,6 +12,14 @@ import (
 type memberAndRoleId struct {
 	MemberId string
 	RoleId   string
+}
+
+func (h *Helper) SyncProjectIdentity() error {
+	var err error
+	h.Spec.Openstack.Project = &projects.Project{}
+	h.Spec.Openstack.Project.ID, err = h.Openstack.GetProjectIdByName(h.Spec.Framework.Name)
+	h.Spec.Openstack.Project.Name = h.Spec.Framework.Name
+	return err
 }
 
 func (h *Helper) createProject() error {

@@ -20,7 +20,7 @@ func NewDeleteCmd() *cobra.Command {
 		},
 	}
 
-	framework.ParseCreationFlags(cmd, &spec)
+	framework.ParseDeletionFlags(cmd, &spec)
 	return cmd
 }
 
@@ -31,14 +31,20 @@ func delete() error {
 		return err
 	}
 
-	h.PrintTenantDeletingMessage()
-	err = h.DeleteKubernetesResources()
+	err = h.SyncProjectIdentity()
 	if err != nil {
-		log.Errorf("framework: failed to delete kubernetes components(%v)", err)
+		log.Errorf("framework: failed to sync project %s id(%v)", h.Spec.Framework.Name, err)
 		return err
 	}
 
-	h.PrintK8sDeletingMessage()
+	// h.PrintK8sDeletingMessage()
+	// err = h.DeleteKubernetesResources()
+	// if err != nil {
+	// 	log.Errorf("framework: failed to delete kubernetes components(%v)", err)
+	// 	return err
+	// }
+
+	h.PrintTenantDeletingMessage()
 	err = h.DeleteOpenstackResources()
 	if err != nil {
 		log.Errorf("framework: failed to delete openstack components(%v)", err)

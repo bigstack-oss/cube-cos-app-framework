@@ -9,21 +9,9 @@ import (
 var (
 	DefaultSpec = Spec{
 		Framework: Framework{
-			Networks: Networks{},
-			OciImages: []OciImage{
-				{
-					Space: "keycloak",
-					Name:  "keycloak",
-					Tag:   "17.0.1-legacy",
-				},
-				{
-					Space: "test",
-					Name:  "nginx",
-					Tag:   "1.25.2",
-				},
-			},
+			Networks:  Networks{},
+			OciImages: []OciImage{},
 			OsImages: []string{
-				"Ubuntu2404",
 				"manila-service-image",
 				"amphora-x64-haproxy",
 			},

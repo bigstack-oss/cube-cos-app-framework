@@ -2,8 +2,10 @@ package framework
 
 import (
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/configs"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/layer3/floatingips"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/layer3/routers"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/ports"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/subnets"
 	log "go-micro.dev/v5/logger"
 )
@@ -31,7 +33,7 @@ func (h *Helper) createRouterToNetworks() error {
 	return nil
 }
 
-func (h *Helper) deleteRouter() error {
+func (h *Helper) deleteRouters() error {
 	routers, err := h.Openstack.ListRouters(routers.ListOpts{ProjectID: h.Spec.Openstack.Project.ID})
 	if err != nil {
 		log.Errorf("openstack: failed to list routers(%v)", err)
@@ -39,7 +41,13 @@ func (h *Helper) deleteRouter() error {
 	}
 
 	for _, r := range routers {
-		err := h.Openstack.DeleteRouter(r.ID)
+		err := h.deleteRouterInterfaces(r)
+		if err != nil {
+			log.Errorf("openstack: failed to delete router interfaces for %s(%v)", r.Name, err)
+			continue
+		}
+
+		err = h.Openstack.DeleteRouter(r.ID)
 		if err != nil {
 			log.Errorf("openstack: failed to delete router %s(%v)", r.Name, err)
 			continue
@@ -49,6 +57,72 @@ func (h *Helper) deleteRouter() error {
 	}
 
 	return nil
+}
+
+func (h *Helper) deleteRouterInterfaces(router routers.Router) error {
+	ports, err := h.Openstack.ListPorts(ports.ListOpts{DeviceID: router.ID})
+	if err != nil {
+		log.Errorf("openstack: failed to list ports for router %s(%v)", router.Name, err)
+		return err
+	}
+
+	isIface := func(owner string) bool {
+		switch owner {
+		case "network:router_interface", "network:ha_router_replicated_interface", "network:router_interface_distributed":
+			return true
+		default:
+			return false
+		}
+	}
+
+	for _, port := range ports {
+		if !isIface(port.DeviceOwner) {
+			h.deleteRouterGateway(router, port)
+			continue
+		}
+
+		err := h.Openstack.DeleteRouterInterface(
+			router.ID,
+			routers.RemoveInterfaceOpts{PortID: port.ID},
+		)
+		if err != nil {
+			log.Errorf("openstack: failed to delete router interface %s(%v)", port.ID, err)
+			continue
+		}
+
+		log.Infof("openstack: router interface %s is deleted successfully", port.ID)
+	}
+
+	return nil
+}
+
+func (h *Helper) deleteRouterGateway(router routers.Router, port ports.Port) {
+	fips, err := h.Openstack.ListFloatingIps(floatingips.ListOpts{RouterID: router.ID})
+	if err != nil {
+		log.Errorf("openstack: failed to list floating ips for router %s(%v)", router.Name, err)
+		return
+	}
+
+	for _, fip := range fips {
+		err := h.Openstack.DisassociateFloatingIp(fip.ID)
+		if err != nil {
+			log.Errorf("openstack: failed to delete floating ip %s(%v)", fip.ID, err)
+			continue
+		}
+
+		log.Infof("openstack: floating ip %s is deleted successfully", fip.ID)
+	}
+
+	err = h.Openstack.UpdateRouter(
+		router.ID,
+		routers.UpdateOpts{GatewayInfo: &routers.GatewayInfo{}},
+	)
+	if err != nil {
+		log.Errorf("openstack: failed to delete router gateway %s(%v)", router.Name, err)
+		return
+	}
+
+	log.Infof("openstack: router gateway %s is deleted successfully", router.Name)
 }
 
 func (h *Helper) genRouterCreationOpts(r configs.Router, networkID string) routers.CreateOpts {
