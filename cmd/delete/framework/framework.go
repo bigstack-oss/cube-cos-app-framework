@@ -37,12 +37,12 @@ func delete() error {
 		return err
 	}
 
-	// h.PrintK8sDeletingMessage()
-	// err = h.DeleteKubernetesResources()
-	// if err != nil {
-	// 	log.Errorf("framework: failed to delete kubernetes components(%v)", err)
-	// 	return err
-	// }
+	h.PrintK8sDeletingMessage()
+	err = h.DeleteKubernetesResources()
+	if err != nil {
+		log.Errorf("framework: failed to delete kubernetes components(%v)", err)
+		return err
+	}
 
 	h.PrintTenantDeletingMessage()
 	err = h.DeleteOpenstackResources()

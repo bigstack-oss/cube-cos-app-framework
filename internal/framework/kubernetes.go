@@ -47,11 +47,14 @@ func (h *Helper) createKubernetes(machinePool map[string]rancher.OpenstackMachin
 func (h *Helper) deleteKubernetes(name string) error {
 	err := h.Rancher.DeleteKubernetes(name)
 	if err != nil {
-		log.Errorf("framework: failed to delete kubernetes cluster %s(%v)", h.Spec.Kubernetes.Name, err)
+		log.Errorf("framework: failed to delete kubernetes %s(%v)", h.Spec.Kubernetes.Name, err)
 		return err
 	}
 
-	log.Infof("framework: kubernetes cluster %s is deleted successfully", h.Spec.Kubernetes.Name)
+	log.Infof(
+		"framework: kubernetes %s deletion request is sent successfully, waiting for deletion to complete",
+		h.Spec.Kubernetes.Name,
+	)
 	return nil
 }
 

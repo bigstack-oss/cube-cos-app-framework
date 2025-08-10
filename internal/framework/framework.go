@@ -455,17 +455,7 @@ func (h *Helper) DeleteOpenstackResources() error {
 }
 
 func (h *Helper) DeleteKubernetesResources() error {
-	config, err := h.Rancher.GetKubernetesConfig(h.Spec.Framework.Name)
-	if err != nil {
-		return err
-	}
-
-	err = h.saveContentToLocal(config, h.Spec.Kubernetes.Config)
-	if err != nil {
-		return err
-	}
-
-	err = h.deleteKubernetes(h.Spec.Framework.Name)
+	err := h.deleteKubernetes(h.Spec.Framework.Name)
 	if err != nil {
 		return err
 	}

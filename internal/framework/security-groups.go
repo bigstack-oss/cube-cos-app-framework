@@ -6,6 +6,7 @@ import (
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/security/rules"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/ports"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/subnets"
 	log "go-micro.dev/v5/logger"
 )
@@ -32,30 +33,60 @@ func (h *Helper) createNetworkWithSubnets() error {
 func (h *Helper) deleteNetworkWithSubnets() error {
 	for _, net := range h.Spec.Openstack.Networks {
 		opts := networks.ListOpts{Name: net.Name, ProjectID: h.Spec.Openstack.Project.ID}
-		opsNet, err := h.Openstack.GetNetworkByName(opts)
+		network, err := h.Openstack.GetNetworkByName(opts)
 		if err != nil {
 			log.Errorf("openstack: failed to get network %s(%v)", net.Name, err)
 			continue
 		}
 
-		subnets, err := h.Openstack.ListSubnets(subnets.ListOpts{NetworkID: opsNet.ID})
+		h.deletePorts(network)
+		h.deleteSubnets(network)
+		err = h.Openstack.DeleteNetwork(network.ID)
 		if err != nil {
-			log.Errorf("openstack: failed to list subnets for network %s(%v)", net.Name, err)
+			log.Errorf("openstack: failed to delete network %s(%v)", net.Name, err)
 			continue
 		}
 
-		for _, s := range subnets {
-			err := h.Openstack.DeleteSubnet(s.ID)
-			if err != nil {
-				log.Errorf("openstack: failed to delete subnet %s(%v)", s.Name, err)
-				continue
-			}
-
-			log.Infof("openstack: subnet %s is deleted successfully", s.Name)
-		}
+		log.Infof("openstack: network %s is deleted successfully", net.Name)
 	}
 
 	return nil
+}
+
+func (h *Helper) deletePorts(network *networks.Network) {
+	ports, err := h.Openstack.ListPorts(ports.ListOpts{NetworkID: network.ID})
+	if err != nil {
+		log.Errorf("openstack: failed to list ports for network %s(%v)", network.Name, err)
+		return
+	}
+
+	for _, p := range ports {
+		err := h.Openstack.DeletePort(p.ID)
+		if err != nil {
+			log.Errorf("openstack: failed to delete port %s(%v)", p.Name, err)
+			continue
+		}
+
+		log.Infof("openstack: port %s is deleted successfully", p.Name)
+	}
+}
+
+func (h *Helper) deleteSubnets(network *networks.Network) {
+	subnets, err := h.Openstack.ListSubnets(subnets.ListOpts{NetworkID: network.ID})
+	if err != nil {
+		log.Errorf("openstack: failed to list subnets for network %s(%v)", network.Name, err)
+		return
+	}
+
+	for _, s := range subnets {
+		err := h.Openstack.DeleteSubnet(s.ID)
+		if err != nil {
+			log.Errorf("openstack: failed to delete subnet %s(%v)", s.Name, err)
+			continue
+		}
+
+		log.Infof("openstack: subnet %s is deleted successfully", s.Name)
+	}
 }
 
 func (h *Helper) genNetworkCreationOpts(n configs.Network) networks.CreateOpts {
