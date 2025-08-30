@@ -300,42 +300,17 @@ func (h *Helper) CheckPrerequisites() error {
 
 func (h *Helper) CheckPortAccess() error {
 	h.PrintPortCheckMessage()
-	status, err := h.Rancher.WaitKubernetesActive(h.Spec.Framework.Name)
+	err := h.connectFramework()
 	if err != nil {
 		return err
 	}
 
-	config, err := h.Rancher.GetKubernetesConfig(status.ClusterName)
+	err = h.investigatePortAccess()
 	if err != nil {
 		return err
 	}
 
-	err = h.saveContentToLocal(config, h.Spec.Kubernetes.Config)
-	if err != nil {
-		return err
-	}
-
-	err = h.initKubernetesClient()
-	if err != nil {
-		return err
-	}
-
-	svcHosts, err := h.ListCosServiceHosts()
-	if err != nil {
-		return err
-	}
-
-	err = h.CreateConfigMapWithScript(svcHosts)
-	if err != nil {
-		return err
-	}
-
-	err = h.testPortAccess()
-	if err != nil {
-		return err
-	}
-
-	h.printTestPortAccessResult()
+	h.printPortAccessResult()
 	return nil
 }
 
@@ -507,6 +482,50 @@ func (h *Helper) DeleteKubernetesResources() error {
 	}
 
 	err = h.Rancher.WaitKubernetesDeleted(h.Spec.Framework.Name)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *Helper) connectFramework() error {
+	status, err := h.Rancher.WaitKubernetesActive(h.Spec.Framework.Name)
+	if err != nil {
+		return err
+	}
+
+	config, err := h.Rancher.GetKubernetesConfig(status.ClusterName)
+	if err != nil {
+		return err
+	}
+
+	err = h.saveContentToLocal(config, h.Spec.Kubernetes.Config)
+	if err != nil {
+		return err
+	}
+
+	err = h.initKubernetesClient()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *Helper) investigatePortAccess() error {
+	svcHosts, err := h.listCosServiceHosts()
+	if err != nil {
+		return err
+	}
+
+	defer h.deletePortAccessArtifacts()
+	err = h.createConfigMapWithScript(svcHosts)
+	if err != nil {
+		return err
+	}
+
+	err = h.runPortAccessJob()
 	if err != nil {
 		return err
 	}

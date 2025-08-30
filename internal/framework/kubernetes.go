@@ -25,7 +25,7 @@ import (
 func (h *Helper) saveContentToLocal(config []byte, filename string) error {
 	err := os.WriteFile(filename, config[2:], 0644)
 	if err != nil {
-		log.Errorf("framework: failed to write kube config to %s(%v)", filename, err)
+		log.Errorf("rancher: failed to write kube config to %s(%v)", filename, err)
 		return err
 	}
 

@@ -16,9 +16,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (h *Helper) testPortAccess() error {
+const (
+	defaultNamespace = "default"
+)
+
+func (h *Helper) runPortAccessJob() error {
 	job := h.genJob()
-	h.Kubernetes.SetJobClient("default")
+	h.Kubernetes.SetJobClient(defaultNamespace)
 	_, err := h.Kubernetes.CreateJob(&job)
 	if err != nil {
 		log.Errorf("framework: failed to create job %s for access check(%v)", h.Spec.Framework.Name, err)
@@ -28,14 +32,14 @@ func (h *Helper) testPortAccess() error {
 	return nil
 }
 
-func (h *Helper) CreateConfigMapWithScript(hosts map[string]string) error {
-	config, err := h.genScriptConfigMap(hosts)
+func (h *Helper) createConfigMapWithScript(hosts map[string]string) error {
+	configMap, err := h.genConfigMapWithScript(hosts)
 	if err != nil {
 		return err
 	}
 
-	h.Kubernetes.SetConfigMapClient("default")
-	_, err = h.Kubernetes.CreateConfigMap(config)
+	h.Kubernetes.SetConfigMapClient(defaultNamespace)
+	_, err = h.Kubernetes.CreateConfigMap(configMap)
 	if err != nil {
 		log.Errorf("framework: failed to create configmap %s for access check(%v)", h.Spec.Framework.Name, err)
 		return err
@@ -44,22 +48,23 @@ func (h *Helper) CreateConfigMapWithScript(hosts map[string]string) error {
 	return nil
 }
 
-func (h *Helper) printTestPortAccessResult() {
+func (h *Helper) printPortAccessResult() {
 	_, err := h.waitingForJobCompletion()
 	if err != nil {
 		return
 	}
 
-	logs, err := h.getTestLogs()
+	logs, err := h.parsePortAccessLogs()
 	if err != nil {
 		return
 	}
 
-	log.Infof(
-		"framework(%s): port access test result:\n%s",
-		h.Spec.Framework.Name,
-		logs,
-	)
+	log.Infof("framework: %s port access result:", h.Spec.Framework.Name)
+	for line := range strings.SplitSeq(logs, "\n") {
+		if strings.TrimSpace(line) != "" {
+			log.Infof("framework: %s", line)
+		}
+	}
 }
 
 func (h *Helper) waitingForJobCompletion() (string, error) {
@@ -68,24 +73,24 @@ func (h *Helper) waitingForJobCompletion() (string, error) {
 	defer ticker.Stop()
 
 	attemptsMax := 60
-	for i := range attemptsMax {
-		log.Infof("framework(%s): checking job status of test access port, attempt %d/%d", i+1, attemptsMax)
+	for range attemptsMax {
+		log.Infof("kubernetes: waiting status of test job...")
 		<-ticker.C
 
-		h.Kubernetes.SetJobClient("default")
+		h.Kubernetes.SetJobClient(defaultNamespace)
 		job, err := h.Kubernetes.GetJob(h.getScriptName())
 		if err != nil {
-			log.Warnf("framework(%s): failed to get job status of test access port(%v)", err)
+			log.Warnf("kubernetes: failed to get status of test job(%v)", err)
 			continue
 		}
 
 		if job.Status.Succeeded > 0 {
-			log.Infof("framework(%s): dry run job completed")
+			log.Infof("kubernetes: %s test job completed", h.getScriptName())
 			return "completed", nil
 		}
 
 		if job.Status.Failed > 0 {
-			log.Errorf("triggers(%s): dry run job failed")
+			log.Errorf("kubernetes: %s test job failed", h.getScriptName())
 			return "failed", nil
 		}
 	}
@@ -96,7 +101,7 @@ func (h *Helper) waitingForJobCompletion() (string, error) {
 	)
 }
 
-func (h *Helper) genScriptConfigMap(hosts map[string]string) (*corev1.ConfigMap, error) {
+func (h *Helper) genConfigMapWithScript(hosts map[string]string) (*corev1.ConfigMap, error) {
 	script, err := h.genCheckScript(hosts)
 	if err != nil {
 		return nil, err
@@ -105,7 +110,7 @@ func (h *Helper) genScriptConfigMap(hosts map[string]string) (*corev1.ConfigMap,
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      h.getScriptName(),
-			Namespace: "default",
+			Namespace: defaultNamespace,
 		},
 		Data: map[string]string{
 			"script.sh": script,
@@ -123,15 +128,19 @@ func (h *Helper) genCheckScript(hosts map[string]string) (string, error) {
 	return fmt.Sprintf(`
 #!/bin/bash
 
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
 SVC_HOST_PORT_PAIRS='%s'
 
 while IFS=$'\t' read -r name url; do
-	if curl -s --connect-timeout 3 -o /dev/null "$url"; then
-		echo "✅ $name $url is OK"
+	if curl -s --connect-timeout 3 -o /dev/null "${url}"; then
+		echo -e "[${GREEN}✔${NC}] ${GREEN}OK${NC}   ${name} ${url}"
 	else
-		echo "❌ $name $url is FAIL"
+		echo -e "[${RED}✗${NC}] ${RED}FAIL${NC} ${name} ${url}"
 	fi
-done < <(echo "$SVC_HOST_PORT_PAIRS" | jq -r 'to_entries[] | "\(.key)\t\(.value)"')
+done < <(echo "${SVC_HOST_PORT_PAIRS}" | jq -r 'to_entries[] | "\(.key)\t\(.value)"')
 `, string(b)), nil
 }
 
@@ -143,7 +152,7 @@ func (h *Helper) genJob() batchv1.Job {
 	return batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      h.getScriptName(),
-			Namespace: "default",
+			Namespace: defaultNamespace,
 		},
 		Spec: batchv1.JobSpec{
 			Template: corev1.PodTemplateSpec{
@@ -190,8 +199,8 @@ func (h *Helper) genJob() batchv1.Job {
 	}
 }
 
-func (h *Helper) getTestLogs() (string, error) {
-	pod, err := h.getTestAccessPod()
+func (h *Helper) parsePortAccessLogs() (string, error) {
+	pod, err := h.getJobPod()
 	if err != nil {
 		return "", err
 	}
@@ -208,8 +217,8 @@ func (h *Helper) getTestLogs() (string, error) {
 	), nil
 }
 
-func (h *Helper) getTestAccessPod() (*corev1.Pod, error) {
-	h.Kubernetes.SetPodClient("default")
+func (h *Helper) getJobPod() (*corev1.Pod, error) {
+	h.Kubernetes.SetPodClient(defaultNamespace)
 	pods, err := h.Kubernetes.ListPod(metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("job-name=%s", h.getScriptName()),
 	})
@@ -249,7 +258,7 @@ func (h *Helper) getPodLogs(pod *corev1.Pod) (string, error) {
 
 	logs, err := req.Stream(ctx)
 	if err != nil {
-		log.Errorf("framework(%s): failed to get logs for test pod(%v)", h.Spec.Framework.Name, err)
+		log.Errorf("framework(%s): failed to get logs for job pod(%v)", h.Spec.Framework.Name, err)
 		return "", err
 	}
 
@@ -257,9 +266,23 @@ func (h *Helper) getPodLogs(pod *corev1.Pod) (string, error) {
 	buf := new(strings.Builder)
 	_, err = io.Copy(buf, logs)
 	if err != nil {
-		log.Errorf("framework(%s): failed to read logs for test pod(%v)", h.Spec.Framework.Name, err)
+		log.Errorf("framework(%s): failed to read logs for job pod(%v)", h.Spec.Framework.Name, err)
 		return "", err
 	}
 
 	return buf.String(), nil
+}
+
+func (h *Helper) deletePortAccessArtifacts() {
+	h.Kubernetes.SetConfigMapClient(defaultNamespace)
+	err := h.Kubernetes.DeleteConfigMap(h.getScriptName())
+	if err != nil {
+		log.Warnf("framework: failed to delete port access configmap for %s(%v)", h.Spec.Framework.Name, err)
+	}
+
+	h.Kubernetes.SetJobClient(defaultNamespace)
+	err = h.Kubernetes.DeleteJob(h.getScriptName())
+	if err != nil {
+		log.Warnf("framework: failed to delete port access job for %s(%v)", h.Spec.Framework.Name, err)
+	}
 }

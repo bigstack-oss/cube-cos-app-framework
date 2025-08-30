@@ -12,17 +12,17 @@ import (
 
 var (
 	OtherCoreServicePorts = map[string]int{
-		"http":     80,
-		"keycloak": 10443,
-		"k3s":      6443,
-		"registry": 5080,
-		"cephMon":  6789,
-		"cephMgr":  3300,
-		"influxDb": 8086,
+		"http":      80,
+		"keycloak":  10443,
+		"k3s":       6443,
+		"registry":  5080,
+		"ceph-mon":  6789,
+		"ceph-mgr":  3300,
+		"influx-db": 8086,
 	}
 )
 
-func (h *Helper) ListCosServiceHosts() (map[string]string, error) {
+func (h *Helper) listCosServiceHosts() (map[string]string, error) {
 	svcHosts, err := h.listOtherCoreServiceHosts()
 	if err != nil {
 		return nil, err

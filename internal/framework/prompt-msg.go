@@ -53,14 +53,14 @@ func (h *Helper) PrintK8sCheckMessage() {
 }
 
 func (h *Helper) PrintPortCheckMessage() {
+	log.Infof(``)
 	log.Infof(`   _____ _               _       _____           _                                                 `)
 	log.Infof(`  / ____| |             | |     |  __ \         | |        /\                                      `)
 	log.Infof(` | |    | |__   ___  ___| | __  | |__) |__  _ __| |_      /  \   ___ ___ ___  ___ ___              `)
 	log.Infof(` | |    | '_ \ / _ \/ __| |/ /  |  ___/ _ \| '__| __|    / /\ \ / __/ __/ _ \/ __/ __|             `)
 	log.Infof(` | |____| | | |  __/ (__|   <   | |  | (_) | |  | |_    / ____ \ (_| (_|  __/\__ \__ \   _   _   _ `)
 	log.Infof(`  \_____|_| |_|\___|\___|_|\_\  |_|   \___/|_|   \__|  /_/    \_\___\___\___||___/___/  (_) (_) (_)`)
-	log.Infof(`                                                                                                   `)
-	log.Infof(`                                                                                                   `)
+	log.Infof(``)
 }
 
 func (h *Helper) PrintK8sDeletingMessage() {
