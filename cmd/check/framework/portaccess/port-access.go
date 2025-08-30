@@ -1,4 +1,4 @@
-package prerequisites
+package portaccess
 
 import (
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/configs"
@@ -13,14 +13,14 @@ var (
 
 func NewCheckCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "prerequisites",
-		Short: "Check the preconditions for framework installation is met or not",
+		Use:   "portAccess",
+		Short: "Check the port access between specified app-framework and CubeCOS",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return check()
 		},
 	}
 
-	framework.ParseCheckPrereqFlags(cmd, &spec)
+	framework.ParseCheckAccessFlags(cmd, &spec)
 	return cmd
 }
 
@@ -31,5 +31,5 @@ func check() error {
 		return err
 	}
 
-	return h.CheckPrerequisites()
+	return h.CheckPortAccess()
 }

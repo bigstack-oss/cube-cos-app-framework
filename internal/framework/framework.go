@@ -298,6 +298,47 @@ func (h *Helper) CheckPrerequisites() error {
 	return nil
 }
 
+func (h *Helper) CheckPortAccess() error {
+	h.PrintPortCheckMessage()
+	status, err := h.Rancher.WaitKubernetesActive(h.Spec.Framework.Name)
+	if err != nil {
+		return err
+	}
+
+	config, err := h.Rancher.GetKubernetesConfig(status.ClusterName)
+	if err != nil {
+		return err
+	}
+
+	err = h.saveContentToLocal(config, h.Spec.Kubernetes.Config)
+	if err != nil {
+		return err
+	}
+
+	err = h.initKubernetesClient()
+	if err != nil {
+		return err
+	}
+
+	svcHosts, err := h.ListCosServiceHosts()
+	if err != nil {
+		return err
+	}
+
+	err = h.CreateConfigMapWithScript(svcHosts)
+	if err != nil {
+		return err
+	}
+
+	err = h.testPortAccess()
+	if err != nil {
+		return err
+	}
+
+	h.printTestPortAccessResult()
+	return nil
+}
+
 func (h *Helper) CreateOpenstackResources() error {
 	err := h.createProject()
 	if err != nil {

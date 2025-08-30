@@ -3,7 +3,7 @@ module github.com/bigstack-oss/cube-cos-app-framework
 go 1.24.0
 
 require (
-	github.com/bigstack-oss/bigstack-dependency-go v0.0.0-20250810162447-237e04778f23
+	github.com/bigstack-oss/bigstack-dependency-go v0.0.0-20250830080536-2f974415ff04
 	github.com/gophercloud/gophercloud/v2 v2.7.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.9.1

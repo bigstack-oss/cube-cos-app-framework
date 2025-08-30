@@ -5,8 +5,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func ParseCheckFlags(cmd *cobra.Command, spec *configs.Spec) {
+func ParseCheckPrereqFlags(cmd *cobra.Command, spec *configs.Spec) {
 	parseCommonFlags(cmd, spec)
+}
+
+func ParseCheckAccessFlags(cmd *cobra.Command, spec *configs.Spec) {
+	cmd.Flags().StringVarP(&spec.Framework.Name, "name", "", spec.Framework.Name, "Name for the framework")
+	cmd.MarkFlagRequired("name")
 }
 
 func ParseCreationFlags(cmd *cobra.Command, spec *configs.Spec) {
