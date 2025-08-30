@@ -14,6 +14,10 @@ func (h *Helper) deleteLoadBalancers() error {
 	}
 
 	for _, lb := range lbs {
+		if lb.ProjectID != h.Spec.Openstack.Project.ID {
+			continue
+		}
+
 		err := h.Openstack.DeleteLoadBalancer(lb.ID)
 		if err != nil {
 			log.Errorf("openstack: failed to delete load balancer %s(%v)", lb.Name, err)

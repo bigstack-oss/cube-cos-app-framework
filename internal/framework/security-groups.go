@@ -39,6 +39,10 @@ func (h *Helper) deleteNetworkWithSubnets() error {
 			continue
 		}
 
+		if network.TenantID != h.Spec.Openstack.Project.ID {
+			continue
+		}
+
 		h.deletePorts(network)
 		h.deleteSubnets(network)
 		err = h.Openstack.DeleteNetwork(network.ID)
@@ -132,6 +136,10 @@ func (h *Helper) deleteSecurityGroupWithRules() error {
 		opts := groups.ListOpts{Name: s.Name, ProjectID: h.Spec.Openstack.Project.ID}
 		secGroup, err := h.Openstack.GetSecurityGroupByName(opts)
 		if err != nil {
+			continue
+		}
+
+		if secGroup.TenantID != h.Spec.Openstack.Project.ID {
 			continue
 		}
 

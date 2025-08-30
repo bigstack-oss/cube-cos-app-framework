@@ -41,6 +41,10 @@ func (h *Helper) deleteRouters() error {
 	}
 
 	for _, r := range routers {
+		if r.ProjectID != h.Spec.Openstack.Project.ID {
+			continue
+		}
+
 		err := h.deleteRouterInterfaces(r)
 		if err != nil {
 			log.Errorf("openstack: failed to delete router interfaces for %s(%v)", r.Name, err)

@@ -9,18 +9,22 @@ func (h *Helper) deleteShares() error {
 	opts := shares.ListOpts{ProjectID: h.Spec.Openstack.Project.ID}
 	list, err := h.Openstack.ListShares(opts)
 	if err != nil {
-		log.Errorf("framework: failed to list openstack shares(%v)", err)
+		log.Errorf("openstack: failed to list openstack shares(%v)", err)
 		return err
 	}
 
 	for _, share := range list {
+		if share.ProjectID != h.Spec.Openstack.Project.ID {
+			continue
+		}
+
 		err = h.Openstack.DeleteShare(share.ID)
 		if err != nil {
-			log.Errorf("framework: failed to delete openstack share %s(%v)", share.Name, err)
+			log.Errorf("openstack: failed to delete openstack share %s(%v)", share.Name, err)
 			return err
 		}
 
-		log.Infof("framework: deleted openstack share %s", share.Name)
+		log.Infof("openstack: deleted openstack share %s", share.Name)
 	}
 
 	return nil

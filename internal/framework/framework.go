@@ -3,6 +3,7 @@ package framework
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/helm"
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/http"
@@ -457,7 +458,11 @@ func (h *Helper) DeleteOpenstackResources() error {
 func (h *Helper) DeleteKubernetesResources() error {
 	err := h.deleteKubernetes(h.Spec.Framework.Name)
 	if err != nil {
-		return err
+		if strings.Contains(err.Error(), "NotFound") {
+			return nil
+		} else {
+			return err
+		}
 	}
 
 	err = h.Rancher.WaitKubernetesDeleted(h.Spec.Framework.Name)

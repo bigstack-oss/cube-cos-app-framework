@@ -14,6 +14,10 @@ func (h *Helper) deleteFloatingIps() error {
 	}
 
 	for _, fip := range fips {
+		if fip.ProjectID != h.Spec.Openstack.Project.ID {
+			continue
+		}
+
 		err := h.Openstack.DeleteFloatingIP(fip.ID)
 		if err != nil {
 			log.Errorf("openstack: failed to delete floating IP %s(%v)", fip.FloatingIP, err)
