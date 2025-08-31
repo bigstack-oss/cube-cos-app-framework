@@ -6,15 +6,16 @@ import (
 )
 
 type Kubernetes struct {
-	Version  string `json:"version"`
-	Name     string `json:"name"`
-	Cloud    `json:"cloud"`
-	Network  `json:"network"`
-	Master   Machine `json:"master"`
-	Worker   Machine `json:"worker"`
-	Plugins  `json:"plugins"`
-	Registry `json:"registry"`
-	Config   string `json:"config"`
+	Version      string `json:"version"`
+	Name         string `json:"name"`
+	Cloud        `json:"cloud"`
+	Network      `json:"network"`
+	Master       Machine `json:"master"`
+	Worker       Machine `json:"worker"`
+	Plugins      `json:"plugins"`
+	Applications Helm `json:"applications"`
+	Registry     `json:"registry"`
+	Config       string `json:"config"`
 }
 
 type Cloud struct {

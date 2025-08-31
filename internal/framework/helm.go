@@ -22,8 +22,22 @@ func (h *Helper) CheckHelmCharts() error {
 	return nil
 }
 
-func (h *Helper) applyInternalServiceCharts() error {
-	charts, err := h.genValueOverridesCharts()
+func (h *Helper) applyBaseServices() error {
+	charts, err := h.genValueOverridedBaseCharts()
+	if err != nil {
+		return err
+	}
+
+	err = h.upgradeOrInstallCharts(charts...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *Helper) applyImageChartRegistry() error {
+	charts, err := h.genValueOverridedRegistryCharts()
 	if err != nil {
 		return err
 	}

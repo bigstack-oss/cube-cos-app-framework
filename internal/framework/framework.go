@@ -404,7 +404,17 @@ func (h *Helper) CreateKubernetesResources() error {
 		return err
 	}
 
-	err = h.applyInternalServiceCharts()
+	err = h.applyBaseServices()
+	if err != nil {
+		return err
+	}
+
+	err = h.waitForAllPodsToBeReady()
+	if err != nil {
+		return err
+	}
+
+	err = h.applyImageChartRegistry()
 	if err != nil {
 		return err
 	}

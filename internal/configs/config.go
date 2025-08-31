@@ -25,12 +25,12 @@ var (
 			Master: Machine{
 				Name:     "master",
 				Quantity: 1,
-				Flavor:   Flavor{Name: "t2.large"},
+				Flavor:   Flavor{Name: "appfw.large"},
 			},
 			Worker: Machine{
 				Name:     "worker",
 				Quantity: 1,
-				Flavor:   Flavor{Name: "t2.large"},
+				Flavor:   Flavor{Name: "appfw.large"},
 			},
 			Plugins: Plugins{
 				Helm: Helm{
@@ -66,6 +66,18 @@ var (
 							Tgz: helm.Tgz{
 								Local: "/opt/appfw/plugins/charts/openstack-cloud-controller-manager-1.3.0.tgz",
 							},
+						},
+					},
+				},
+			},
+			Applications: Helm{
+				Charts: []helm.Chart{
+					{
+						Release:   "harbor",
+						Version:   "27.0.3",
+						Namespace: "harbor",
+						Tgz: helm.Tgz{
+							Local: "/opt/appfw/plugins/charts/harbor-27.0.3.tgz",
 						},
 					},
 				},

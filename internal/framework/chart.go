@@ -7,10 +7,26 @@ import (
 	log "go-micro.dev/v5/logger"
 )
 
-func (h *Helper) genValueOverridesCharts() ([]*helm.Chart, error) {
+func (h *Helper) genValueOverridedBaseCharts() ([]*helm.Chart, error) {
 	var charts []*helm.Chart
 
-	for _, chart := range h.Spec.Kubernetes.Helm.Charts {
+	for _, chart := range h.Spec.Kubernetes.Plugins.Helm.Charts {
+		overrideChart, err := h.overrideChartByRelease(chart.Release, chart)
+		if err != nil {
+			log.Errorf("framework: failed to override chart by release %s: %v", chart.Release, err)
+			return nil, err
+		}
+
+		charts = append(charts, overrideChart)
+	}
+
+	return charts, nil
+}
+
+func (h *Helper) genValueOverridedRegistryCharts() ([]*helm.Chart, error) {
+	var charts []*helm.Chart
+
+	for _, chart := range h.Spec.Kubernetes.Applications.Charts {
 		overrideChart, err := h.overrideChartByRelease(chart.Release, chart)
 		if err != nil {
 			log.Errorf("framework: failed to override chart by release %s: %v", chart.Release, err)
@@ -56,6 +72,12 @@ func (h *Helper) overrideChartByRelease(release string, chart helm.Chart) (*helm
 		overrideChart, err = h.overrideOpenstackCcmChart(chart)
 		if err != nil {
 			return nil, fmt.Errorf("failed to generate openstack ccm chart(%v)", err)
+		}
+
+	case "harbor":
+		overrideChart, err = h.overrideHarborChart(chart)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate harbor chart(%v)", err)
 		}
 	}
 
