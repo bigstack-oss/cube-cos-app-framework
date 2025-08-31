@@ -9,7 +9,21 @@ import (
 )
 
 func (h *Helper) CheckHelmCharts() error {
-	for _, chart := range h.Spec.Kubernetes.Plugins.Helm.Charts {
+	err := h.checkIfChartExists(h.Spec.Kubernetes.Plugins.Helm.Charts)
+	if err != nil {
+		return err
+	}
+
+	err = h.checkIfChartExists(h.Spec.Kubernetes.Applications.Charts)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *Helper) checkIfChartExists(charts []helm.Chart) error {
+	for _, chart := range charts {
 		log.Infof("framework: checking helm chart %s(%s)", chart.Release, chart.Tgz.Local)
 
 		_, err := os.Stat(chart.Tgz.Local)
