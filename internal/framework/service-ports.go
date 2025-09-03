@@ -12,13 +12,17 @@ import (
 
 var (
 	OtherCoreServicePorts = map[string]int{
-		"http":      80,
-		"keycloak":  10443,
-		"k3s":       6443,
-		"registry":  5080,
-		"ceph-mon":  6789,
-		"ceph-mgr":  3300,
-		"influx-db": 8086,
+		"ssh":          22,
+		"http":         80,
+		"etcd":         2379,
+		"keycloak":     10443,
+		"k3s":          6443,
+		"registry":     5080,
+		"nova-console": 6080,
+		"ceph-mon":     6789,
+		"ceph-mgr":     3300,
+		"nfs":          2049,
+		"influx-db":    8086,
 	}
 )
 

@@ -35,6 +35,7 @@ func (h *Helper) runPortAccessJob() error {
 func (h *Helper) createConfigMapWithScript(hosts map[string]string) error {
 	configMap, err := h.genConfigMapWithScript(hosts)
 	if err != nil {
+		log.Errorf("framework: failed to generate configmap for access check(%v)", err)
 		return err
 	}
 

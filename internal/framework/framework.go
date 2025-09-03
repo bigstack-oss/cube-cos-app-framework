@@ -305,6 +305,7 @@ func (h *Helper) CheckPortAccess() error {
 		return err
 	}
 
+	defer h.deletePortAccessArtifacts()
 	err = h.investigatePortAccess()
 	if err != nil {
 		return err
@@ -529,7 +530,6 @@ func (h *Helper) investigatePortAccess() error {
 		return err
 	}
 
-	defer h.deletePortAccessArtifacts()
 	err = h.createConfigMapWithScript(svcHosts)
 	if err != nil {
 		return err
