@@ -21,8 +21,8 @@ var (
 		"nova-console": 6080,
 		"ceph-mon":     6789,
 		"ceph-mgr":     3300,
-		"nfs":          2049,
-		"influx-db":    8086,
+		// "nfs":       2049,
+		"influx-db": 8086,
 	}
 )
 
