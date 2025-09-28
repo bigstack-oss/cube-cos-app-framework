@@ -7,6 +7,7 @@ import (
 
 type Kubernetes struct {
 	Version      string `json:"version"`
+	Id           string `json:"id"`
 	Name         string `json:"name"`
 	Cloud        `json:"cloud"`
 	Network      `json:"network"`
@@ -40,11 +41,17 @@ type Helm struct {
 }
 
 type Registry struct {
-	Protocol string   `json:"protocol"`
-	Port     int      `json:"defaultPort"`
-	Mirrors  []Mirror `json:"mirrors"`
+	Protocol string            `json:"protocol"`
+	Port     int               `json:"defaultPort"`
+	Configs  map[string]Config `json:"configs"`
+	Mirrors  []Mirror          `json:"mirrors"`
 }
 
+type Config struct {
+	Username         string `json:"username"`
+	Password         string `json:"password"`
+	rancher.Registry `json:"registry"`
+}
 type Mirror struct {
 	Hostname string `json:"hostname"`
 	To       string `json:"to"`

@@ -41,6 +41,7 @@ func (h *Helper) createKubernetes(machinePool map[string]rancher.OpenstackMachin
 	}
 
 	log.Infof("rancher: cluster is created successfully (%s %s)", cluster.Name, cluster.Id)
+	h.Spec.Kubernetes.Id = cluster.Name
 	return cluster, nil
 }
 
@@ -110,7 +111,7 @@ func (h *Helper) genKubernetesSpec(machinePool map[string]rancher.OpenstackMachi
 					SnapshotScheduleCron: "0 */5 * * *",
 				},
 				Registries: rancher.Registries{
-					Configs: make(map[string]string),
+					Configs: h.genBuiltInRegistryConfigs(),
 					Mirrors: h.genRegistryMirrorLists(),
 				},
 				ChartValues: rancher.ChartValues{
@@ -165,6 +166,16 @@ func (h *Helper) genKubernetesSpec(machinePool map[string]rancher.OpenstackMachi
 			},
 		},
 	}
+}
+
+func (h *Helper) genBuiltInRegistryConfigs() map[string]rancher.Registry {
+	configs := map[string]rancher.Registry{}
+
+	for name, config := range h.Spec.Kubernetes.Registry.Configs {
+		configs[name] = config.Registry
+	}
+
+	return configs
 }
 
 func (h *Helper) genRegistryMirrorLists() map[string]rancher.MirrorTo {

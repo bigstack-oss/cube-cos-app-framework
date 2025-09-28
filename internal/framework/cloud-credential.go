@@ -43,3 +43,51 @@ func (h *Helper) genCloudCredentialSpec(projectName, password string) rancher.Cl
 		},
 	}
 }
+
+func (h *Helper) applyRegistrySecrets() error {
+	if len(h.Spec.Kubernetes.Registry.Configs) == 0 {
+		return nil
+	}
+
+	for _, config := range h.Spec.Kubernetes.Registry.Configs {
+		secret := h.generateSecretOpts(config.Username, config.Password)
+		resp, err := h.createRegistrySecret(secret)
+		if err != nil {
+			return err
+		}
+
+		config.AuthConfigSecretName = resp.Metadata.Name
+	}
+
+	return nil
+}
+
+func (h *Helper) generateSecretOpts(username, password string) rancher.Secret {
+	return rancher.Secret{
+		Type: "kubernetes.io/basic-auth",
+		Metadata: rancher.Metadata{
+			Namespace:    "fleet-default",
+			GenerateName: "registryconfig-auth-",
+		},
+		Data: rancher.Data{
+			Username: h.base64Encode(username),
+			Password: h.base64Encode(password),
+		},
+	}
+}
+
+func (h *Helper) createRegistrySecret(secret rancher.Secret) (*rancher.SecretResponse, error) {
+	resp, err := h.Rancher.CreateRancherSecret(&secret)
+	if err != nil {
+		log.Errorf("rancher: failed to create registry secret (%v)", err)
+		return nil, err
+	}
+
+	log.Infof(
+		"rancher: registry secret is created successfully (%s %s)",
+		h.Spec.Kubernetes.Cloud.Credential.Name,
+		h.Spec.Kubernetes.Cloud.Credential.Id,
+	)
+
+	return resp, nil
+}

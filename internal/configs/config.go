@@ -2,6 +2,7 @@ package configs
 
 import (
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/helm"
+	"github.com/bigstack-oss/bigstack-dependency-go/pkg/rancher"
 	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/projects"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/subnets"
 )
@@ -14,6 +15,17 @@ var (
 			OsImages: []string{
 				"manila-service-image",
 				"amphora-x64-haproxy",
+			},
+			ExtensionRepos: []ExtensionRepo{
+				{
+					Name:               "cube-apps",
+					HttpUrl:            "https://registry.cubecos.com",
+					OciUrl:             "oci://registry.cubecos.com/extensions",
+					Username:           "admin",
+					Password:           "admin",
+					InsecureSkipVerify: true,
+					InsecurePlainHttp:  true,
+				},
 			},
 		},
 		Kubernetes: Kubernetes{
@@ -85,6 +97,13 @@ var (
 			Registry: Registry{
 				Protocol: "http",
 				Port:     5080,
+				Configs: map[string]Config{
+					"registry.cubecos.com": {
+						Username: "admin",
+						Password: "admin",
+						Registry: rancher.Registry{InsecureSkipVerify: true},
+					},
+				},
 				Mirrors: []Mirror{
 					{Hostname: "*", To: ""},
 					{Hostname: "index.docker.io", To: ""},

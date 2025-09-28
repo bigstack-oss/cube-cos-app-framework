@@ -6,9 +6,20 @@ type Framework struct {
 	Networks          `json:"network"`
 	Os                `json:"os"`
 	Quantity          `json:"replicas"`
-	OsImages          []string   `json:"osImages"`
-	OciImages         []OciImage `json:"ociImages"`
+	OsImages          []string        `json:"osImages"`
+	OciImages         []OciImage      `json:"ociImages"`
+	ExtensionRepos    []ExtensionRepo `json:"extensionRepos"`
 	Plugins           `json:"plugins"`
+}
+
+type ExtensionRepo struct {
+	Name               string `json:"name"`
+	HttpUrl            string `json:"httpUrl"`
+	OciUrl             string `json:"ociUrl"`
+	Username           string `json:"username"`
+	Password           string `json:"password"`
+	InsecurePlainHttp  bool   `json:"insecurePlainHttp"`
+	InsecureSkipVerify bool   `json:"insecureSkipVerify"`
 }
 
 type Networks struct {
