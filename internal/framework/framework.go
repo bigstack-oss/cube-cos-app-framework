@@ -425,6 +425,16 @@ func (h *Helper) CreateKubernetesResources() error {
 		return err
 	}
 
+	err = h.createDnsRecordForRegistry()
+	if err != nil {
+		return err
+	}
+
+	err = h.createRegistryProject()
+	if err != nil {
+		return err
+	}
+
 	err = h.applyExtensionRepos()
 	if err != nil {
 		return err

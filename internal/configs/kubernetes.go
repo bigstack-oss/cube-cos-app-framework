@@ -48,9 +48,11 @@ type Registry struct {
 }
 
 type Config struct {
+	Name             string `json:"name"`
 	Username         string `json:"username"`
 	Password         string `json:"password"`
 	rancher.Registry `json:"registry"`
+	FloatingIp       string `json:"floatingIp"`
 }
 type Mirror struct {
 	Hostname string `json:"hostname"`

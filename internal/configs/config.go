@@ -99,6 +99,7 @@ var (
 				Port:     5080,
 				Configs: map[string]Config{
 					"registry.cubecos.com": {
+						Name:     "internal-oci-registry",
 						Username: "admin",
 						Password: "admin",
 						Registry: rancher.Registry{InsecureSkipVerify: true},
