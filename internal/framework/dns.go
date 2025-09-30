@@ -12,7 +12,7 @@ func (h *Helper) createDnsRecordForRegistry() error {
 	tld := h.getInternalRegistryTld()
 	zone, err := h.Openstack.CreateDnsZone(zones.CreateOpts{
 		Name:  tld,
-		Email: fmt.Sprintf("admin@%s", tld),
+		Email: strings.TrimSuffix(fmt.Sprintf("admin@%s", tld), "."),
 	})
 	if err != nil {
 		return err

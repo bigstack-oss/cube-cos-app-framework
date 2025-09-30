@@ -420,6 +420,8 @@ func (h *Helper) CreateKubernetesResources() error {
 		return err
 	}
 
+	h.applyIngressLoadBalancer()
+
 	err = h.applyImageChartRegistry()
 	if err != nil {
 		return err

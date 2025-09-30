@@ -26,6 +26,7 @@ func (h *Helper) customizeHarborValues() (*values.Options, error) {
 	return &values.Options{
 		Values: []string{
 			fmt.Sprintf("externalURL=%s", h.findCubeAppsHttpUrl()),
+			fmt.Sprintf("expose.loadBalancer.IP=%s", h.findRegistryFloatingIp()),
 			"global.defaultStorageClass=csi-cinder",
 			"adminPassword=admin",
 			"ingress.core.ingressClassName=nginx",
@@ -43,4 +44,14 @@ func (h *Helper) findCubeAppsHttpUrl() string {
 	}
 
 	return "https://registry.cubecos.com"
+}
+
+func (h *Helper) findRegistryFloatingIp() string {
+	for _, config := range h.Spec.Kubernetes.Registry.Configs {
+		if config.Name == "internal-oci-registry" {
+			return config.FloatingIp
+		}
+	}
+
+	return ""
 }

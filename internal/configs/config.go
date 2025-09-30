@@ -37,12 +37,12 @@ var (
 			Master: Machine{
 				Name:     "master",
 				Quantity: 1,
-				Flavor:   Flavor{Name: "appfw.large"},
+				Flavor:   Flavor{Name: "storage.xlarge"},
 			},
 			Worker: Machine{
 				Name:     "worker",
 				Quantity: 1,
-				Flavor:   Flavor{Name: "appfw.large"},
+				Flavor:   Flavor{Name: "storage.xlarge"},
 			},
 			Plugins: Plugins{
 				Helm: Helm{
@@ -99,10 +99,11 @@ var (
 				Port:     5080,
 				Configs: map[string]Config{
 					"registry.cubecos.com": {
-						Name:     "internal-oci-registry",
-						Username: "admin",
-						Password: "admin",
-						Registry: rancher.Registry{InsecureSkipVerify: true},
+						Name:       "internal-oci-registry",
+						Username:   "admin",
+						Password:   "admin",
+						FloatingIp: "10.32.36.103",
+						Registry:   rancher.Registry{InsecureSkipVerify: true},
 					},
 				},
 				Mirrors: []Mirror{
@@ -325,12 +326,12 @@ var (
 					},
 				},
 			},
-			Flavor: Flavor{Name: "t2.large"},
+			Flavor: Flavor{Name: "storage.xlarge"},
 			SSH: SSH{
 				User: "ubuntu",
 				Port: 22,
 			},
-			Image: Image{Name: "Ubuntu2404"},
+			Image: Image{Name: "ubuntu_24.04"},
 		},
 	}
 )

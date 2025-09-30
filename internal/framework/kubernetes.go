@@ -18,6 +18,7 @@ import (
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	kubeErr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	k8syaml "k8s.io/apimachinery/pkg/util/yaml"
 	sigyaml "sigs.k8s.io/yaml"
 )
@@ -465,6 +466,41 @@ func isPodReady(pod *corev1.Pod) bool {
 	}
 
 	return false
+}
+
+func (h *Helper) applyIngressLoadBalancer() error {
+	h.Kubernetes.SetSvcClient("kube-system")
+	internalPolicy := corev1.ServiceInternalTrafficPolicyCluster
+	_, err := h.Kubernetes.CreateSvc(&corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "ingress-lb",
+			Namespace: "kube-system",
+		},
+		Spec: corev1.ServiceSpec{
+			Type:                  corev1.ServiceTypeLoadBalancer,
+			ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeLocal,
+			InternalTrafficPolicy: &internalPolicy,
+			SessionAffinity:       corev1.ServiceAffinityNone,
+			Selector: map[string]string{
+				"app": "ingress-nginx",
+			},
+			LoadBalancerIP: h.Spec.Framework.Networks.LoadBalancer.Ip,
+			Ports: []corev1.ServicePort{
+				{
+					Name:       "https",
+					Port:       443,
+					Protocol:   corev1.ProtocolTCP,
+					TargetPort: intstr.FromInt(443),
+				},
+			},
+		},
+	})
+	if err != nil {
+		log.Errorf("framework: failed to create ingress load balancer(%v)", err)
+		return err
+	}
+
+	return nil
 }
 
 func (h *Helper) waitForNeededCrdsToBeActive() error {
