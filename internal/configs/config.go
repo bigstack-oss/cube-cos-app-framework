@@ -36,6 +36,14 @@ var (
 				Helm: Helm{
 					Charts: []helm.Chart{
 						{
+							Release:   "keycloak",
+							Version:   "18.1.1-cube",
+							Namespace: "keycloak",
+							Tgz: helm.Tgz{
+								Local: "/opt/appfw/plugins/charts/keycloak-18.1.1-cube.tgz",
+							},
+						},
+						{
 							Release:   "cinder-csi",
 							Version:   "2.31.2",
 							Namespace: "kube-system",
@@ -74,10 +82,10 @@ var (
 				Charts: []helm.Chart{
 					{
 						Release:   "harbor",
-						Version:   "27.0.3",
+						Version:   "1.17.1",
 						Namespace: "harbor",
 						Tgz: helm.Tgz{
-							Local: "/opt/appfw/plugins/charts/harbor-27.0.3.tgz",
+							Local: "/opt/appfw/plugins/charts/harbor-1.17.1.tgz",
 						},
 					},
 				},

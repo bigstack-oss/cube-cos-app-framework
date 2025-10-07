@@ -44,6 +44,12 @@ func (h *Helper) overrideChartByRelease(release string, chart helm.Chart) (*helm
 	overrideChart := &helm.Chart{}
 
 	switch release {
+	case "keycloak":
+		overrideChart, err = h.overrideKeycloakChart(chart)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate keycloak chart(%v)", err)
+		}
+
 	case "cinder-csi":
 		overrideChart, err = h.overrideCsiCinderChart(chart)
 		if err != nil {
