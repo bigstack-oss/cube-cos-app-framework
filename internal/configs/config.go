@@ -94,10 +94,10 @@ var (
 				Charts: []helm.Chart{
 					{
 						Release:   "harbor",
-						Version:   "1.17.1",
+						Version:   "27.0.3",
 						Namespace: "harbor",
 						Tgz: helm.Tgz{
-							Local: "/opt/appfw/plugins/charts/harbor-1.17.1.tgz",
+							Local: "/opt/appfw/plugins/charts/harbor-27.0.3.tgz",
 						},
 					},
 				},
