@@ -136,7 +136,8 @@ NC='\033[0m' # No Color
 SVC_HOST_PORT_PAIRS='%s'
 
 while IFS=$'\t' read -r name url; do
-	if curl -s --connect-timeout 3 -o /dev/null "${url}"; then
+	telnet ${url}
+	if [[ ${?} -eq 0 ]]; then
 		echo -e "[${GREEN}✔${NC}] ${GREEN}OK${NC}   ${name} ${url}"
 	else
 		echo -e "[${RED}✗${NC}] ${RED}FAIL${NC} ${name} ${url}"

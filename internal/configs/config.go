@@ -2,6 +2,7 @@ package configs
 
 import (
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/helm"
+	"github.com/bigstack-oss/bigstack-dependency-go/pkg/rancher"
 	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/projects"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/subnets"
 )
@@ -15,6 +16,17 @@ var (
 				"manila-service-image",
 				"amphora-x64-haproxy",
 			},
+			ExtensionRepos: []ExtensionRepo{
+				{
+					Name:               "cube-apps",
+					HttpUrl:            "https://registry.cubecos.com",
+					OciUrl:             "oci://registry.cubecos.com/extensions",
+					Username:           "admin",
+					Password:           "admin",
+					InsecureSkipVerify: true,
+					InsecurePlainHttp:  true,
+				},
+			},
 		},
 		Kubernetes: Kubernetes{
 			Name:    "app-framework",
@@ -25,12 +37,12 @@ var (
 			Master: Machine{
 				Name:     "master",
 				Quantity: 1,
-				Flavor:   Flavor{Name: "appfw.large"},
+				Flavor:   Flavor{Name: "storage.xlarge"},
 			},
 			Worker: Machine{
 				Name:     "worker",
 				Quantity: 1,
-				Flavor:   Flavor{Name: "appfw.large"},
+				Flavor:   Flavor{Name: "storage.xlarge"},
 			},
 			Plugins: Plugins{
 				Helm: Helm{
@@ -93,6 +105,15 @@ var (
 			Registry: Registry{
 				Protocol: "http",
 				Port:     5080,
+				Configs: map[string]Config{
+					"registry.cubecos.com": {
+						Name:       "internal-oci-registry",
+						Username:   "admin",
+						Password:   "admin",
+						FloatingIp: "10.32.36.103",
+						Registry:   rancher.Registry{InsecureSkipVerify: true},
+					},
+				},
 				Mirrors: []Mirror{
 					{Hostname: "*", To: ""},
 					{Hostname: "index.docker.io", To: ""},
@@ -313,12 +334,12 @@ var (
 					},
 				},
 			},
-			Flavor: Flavor{Name: "t2.large"},
+			Flavor: Flavor{Name: "storage.xlarge"},
 			SSH: SSH{
 				User: "ubuntu",
 				Port: 22,
 			},
-			Image: Image{Name: "Ubuntu2404"},
+			Image: Image{Name: "ubuntu_24.04"},
 		},
 	}
 )

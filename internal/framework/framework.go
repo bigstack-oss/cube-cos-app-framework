@@ -370,6 +370,11 @@ func (h *Helper) CreateKubernetesResources() error {
 		return err
 	}
 
+	err = h.applyRegistrySecrets()
+	if err != nil {
+		return err
+	}
+
 	pools, err := h.applyOpenstackMachinePools()
 	if err != nil {
 		return err
@@ -415,7 +420,24 @@ func (h *Helper) CreateKubernetesResources() error {
 		return err
 	}
 
+	h.applyIngressLoadBalancer()
+
 	err = h.applyImageChartRegistry()
+	if err != nil {
+		return err
+	}
+
+	err = h.createDnsRecordForRegistry()
+	if err != nil {
+		return err
+	}
+
+	err = h.createRegistryProject()
+	if err != nil {
+		return err
+	}
+
+	err = h.applyExtensionRepos()
 	if err != nil {
 		return err
 	}
