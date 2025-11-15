@@ -16,6 +16,7 @@ type ExtensionRepo struct {
 	Name               string `json:"name"`
 	HttpUrl            string `json:"httpUrl"`
 	OciUrl             string `json:"ociUrl"`
+	DomainName         string `json:"domainName"`
 	Username           string `json:"username"`
 	Password           string `json:"password"`
 	InsecurePlainHttp  bool   `json:"insecurePlainHttp"`

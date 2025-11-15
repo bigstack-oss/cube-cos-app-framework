@@ -6,8 +6,49 @@ import (
 
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/helm"
 	"github.com/pkg/errors"
-	log "go-micro.dev/v5/logger"
 	"helm.sh/helm/v3/pkg/cli/values"
+)
+
+const (
+	extraEnv = `|
+  - name: KEYCLOAK_USER
+    value: admin
+  - name: KEYCLOAK_PASSWORD
+    value: admin
+  - name: PROXY_ADDRESS_FORWARDING
+    value: "true"
+  - name: KEYCLOAK_DEFAULT_THEME
+    value: cube
+`
+
+	extraInitContainers = `|
+  - name: theme-provider
+    image: busybox
+    imagePullPolicy: IfNotPresent
+    command:
+      - sh
+    args:
+      - -c
+      - |
+        echo "Copying theme..."
+        tar -xf /tmp/cube.tar.gz --strip-components=2 -C /theme
+    volumeMounts:
+      - name: theme
+        mountPath: /theme
+      - name: cube-theme-volume
+        mountPath: /tmp/cube.tar.gz
+        subPath: cube.tar.gz
+`
+
+	extraVolumeMounts = "- name: theme\n mountPath: /opt/jboss/keycloak/themes/cube"
+
+	extraVolumes = `|
+  - name: theme
+    emptyDir: {}
+  - name: cube-theme-volume
+    configMap:
+      name: cube-theme
+`
 )
 
 type Ingress struct {
@@ -67,44 +108,8 @@ func (h *Helper) overrideKeycloakChart(chart helm.Chart) (*helm.Chart, error) {
 }
 
 func (h *Helper) customizeKeycloakValues() (*values.Options, error) {
-	ingress, err := h.genCustomKeycloakIngress()
-	if err != nil {
-		log.Errorf("framework: failed to generate custom keycloak ingress (%v)", err)
-		return nil, err
-	}
-
-	extraEnvs, err := h.genCustomKeycloakExtraEnvs()
-	if err != nil {
-		log.Errorf("framework: failed to generate custom keycloak ingress (%v)", err)
-		return nil, err
-	}
-
-	extraInitContainers, err := h.genCustomKeycloakInitContainers()
-	if err != nil {
-		log.Errorf("framework: failed to generate custom keycloak init containers (%v)", err)
-		return nil, err
-	}
-
-	extraVolumeMounts, err := h.genCustomKeycloakExtraVolumeMounts()
-	if err != nil {
-		log.Errorf("framework: failed to generate custom keycloak extra volume mounts (%v)", err)
-		return nil, err
-	}
-
-	extraVolumes, err := h.genCustomKeycloakExtraVolumes()
-	if err != nil {
-		log.Errorf("framework: failed to generate custom keycloak extra volumes (%v)", err)
-		return nil, err
-	}
-
 	return &values.Options{
-		JSONValues: []string{
-			fmt.Sprintf("ingress=%s", ingress),
-			fmt.Sprintf("extraEnv=%s", extraEnvs),
-			fmt.Sprintf("extraInitContainers=%s", extraInitContainers),
-			fmt.Sprintf("extraVolumeMounts=%s", extraVolumeMounts),
-			fmt.Sprintf("extraVolumes=%s", extraVolumes),
-		},
+		ValueFiles: []string{"/opt/appfw/keycloak-values.yaml"},
 	}, nil
 }
 

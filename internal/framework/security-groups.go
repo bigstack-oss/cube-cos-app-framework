@@ -71,7 +71,7 @@ func (h *Helper) deletePorts(network *networks.Network) {
 			continue
 		}
 
-		log.Infof("openstack: port %s is deleted successfully", p.Name)
+		log.Infof("openstack: port %s is deleted successfully", p.ID)
 	}
 }
 

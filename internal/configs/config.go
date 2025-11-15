@@ -19,8 +19,9 @@ var (
 			ExtensionRepos: []ExtensionRepo{
 				{
 					Name:               "cube-apps",
-					HttpUrl:            "https://registry.cubecos.com",
-					OciUrl:             "oci://registry.cubecos.com/extensions",
+					HttpUrl:            "https://test-9-app-fw-2.registry.cubecos.com",
+					DomainName:         "test-9-app-fw-2.registry.cubecos.com",
+					OciUrl:             "oci://test-9-app-fw-2.registry.cubecos.com/extensions",
 					Username:           "admin",
 					Password:           "admin",
 					InsecureSkipVerify: true,
@@ -37,24 +38,16 @@ var (
 			Master: Machine{
 				Name:     "master",
 				Quantity: 1,
-				Flavor:   Flavor{Name: "storage.xlarge"},
+				Flavor:   Flavor{Name: "t2.xlarge"},
 			},
 			Worker: Machine{
 				Name:     "worker",
 				Quantity: 1,
-				Flavor:   Flavor{Name: "storage.xlarge"},
+				Flavor:   Flavor{Name: "t2.xlarge"},
 			},
 			Plugins: Plugins{
 				Helm: Helm{
 					Charts: []helm.Chart{
-						{
-							Release:   "keycloak",
-							Version:   "18.1.1-cube",
-							Namespace: "keycloak",
-							Tgz: helm.Tgz{
-								Local: "/opt/appfw/plugins/charts/keycloak-18.1.1-cube.tgz",
-							},
-						},
 						{
 							Release:   "cinder-csi",
 							Version:   "2.31.2",
@@ -87,6 +80,14 @@ var (
 								Local: "/opt/appfw/plugins/charts/openstack-cloud-controller-manager-1.3.0.tgz",
 							},
 						},
+						{
+							Release:   "keycloak",
+							Version:   "18.1.1-cube",
+							Namespace: "keycloak",
+							Tgz: helm.Tgz{
+								Local: "/opt/appfw/plugins/charts/keycloak-18.1.1-cube.tgz",
+							},
+						},
 					},
 				},
 			},
@@ -94,10 +95,10 @@ var (
 				Charts: []helm.Chart{
 					{
 						Release:   "harbor",
-						Version:   "27.0.3",
+						Version:   "1.18.0",
 						Namespace: "harbor",
 						Tgz: helm.Tgz{
-							Local: "/opt/appfw/plugins/charts/harbor-27.0.3.tgz",
+							Local: "/opt/appfw/plugins/charts/harbor-1.18.0.tgz",
 						},
 					},
 				},
@@ -110,7 +111,7 @@ var (
 						Name:       "internal-oci-registry",
 						Username:   "admin",
 						Password:   "admin",
-						FloatingIp: "10.32.36.103",
+						FloatingIp: "10.32.36.100",
 						Registry:   rancher.Registry{InsecureSkipVerify: true},
 					},
 				},
@@ -339,7 +340,7 @@ var (
 				User: "ubuntu",
 				Port: 22,
 			},
-			Image: Image{Name: "ubuntu_24.04"},
+			Image: Image{Name: "rancher-cluster-image-rke2-v1.32.4"},
 		},
 	}
 )

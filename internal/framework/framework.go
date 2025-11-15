@@ -144,7 +144,7 @@ func (h *Helper) initOpenstackParams() error {
 	h.Spec.Openstack.Project.Name = h.Spec.Framework.Name
 	h.Spec.Openstack.User.Name = h.Spec.Framework.Name
 	for i, role := range h.Spec.Openstack.Roles {
-		if role.Name == "_member_" {
+		if role.Name == "admin" {
 			h.Spec.Openstack.Roles[i].User = h.Spec.Framework.Name
 		}
 	}
@@ -250,8 +250,7 @@ func (h *Helper) initOpenstackCli() error {
 }
 
 func (h *Helper) initRancherCli() error {
-	var err error
-	h.Rancher, err = rancher.NewHelper(
+	err := rancher.NewGlobalHelper(
 		rancher.Url(h.Spec.Rancher.Url),
 		rancher.AuthToken(h.Spec.Rancher.Token),
 	)
@@ -260,6 +259,7 @@ func (h *Helper) initRancherCli() error {
 		return err
 	}
 
+	h.Rancher = rancher.GetGlobalHelper()
 	return nil
 }
 
@@ -390,6 +390,15 @@ func (h *Helper) CreateKubernetesResources() error {
 		return err
 	}
 
+	// // test area
+	// h.Spec.Openstack.Project.ID = "45531abfab114e3ab1851ecc7086a378"
+	// h.Spec.Kubernetes.ID = "c-m-xk4rhfnv"
+	// status, err := h.Rancher.WaitKubernetesActive("test-9-app-fw-2")
+	// if err != nil {
+	// 	return err
+	// }
+	// // test area
+
 	config, err := h.Rancher.GetKubernetesConfig(status.ClusterName)
 	if err != nil {
 		return err
@@ -421,6 +430,11 @@ func (h *Helper) CreateKubernetesResources() error {
 	}
 
 	h.applyIngressLoadBalancer()
+
+	err = h.applyIngresses()
+	if err != nil {
+		return err
+	}
 
 	err = h.applyImageChartRegistry()
 	if err != nil {

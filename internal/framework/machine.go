@@ -11,13 +11,11 @@ import (
 func (h *Helper) applyOpenstackMachinePools() (map[string]rancher.OpenstackMachineResponse, error) {
 	masters, err := h.applyMasterMachinePool()
 	if err != nil {
-		log.Errorf("rancher: failed to apply master machine pool(%v)", err)
 		return nil, err
 	}
 
 	workers, err := h.applyWorkerMachinePool()
 	if err != nil {
-		log.Errorf("rancher: failed to apply worker machine pool(%v)", err)
 		return nil, err
 	}
 

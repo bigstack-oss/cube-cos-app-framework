@@ -66,7 +66,7 @@ func (h *Helper) generateSecretOpts(username, password string) rancher.Secret {
 	return rancher.Secret{
 		Type: "kubernetes.io/basic-auth",
 		Metadata: rancher.Metadata{
-			Namespace:    "fleet-default",
+			Namespace:    "cattle-system",
 			GenerateName: "registryconfig-auth-",
 		},
 		Data: rancher.Data{

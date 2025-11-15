@@ -13,12 +13,14 @@ func (h *Helper) createShareFsNetworks() error {
 	for _, network := range h.Spec.Openstack.Networks {
 		shareNet := fmt.Sprintf("%s-%s_%s", base.ShareNetPrefix, h.Spec.Openstack.Project.Name, network.Name)
 		if h.isShareNetworkExist(shareNet) {
+			log.Infof("openstack: share net %s is already exist", shareNet)
 			continue
 		}
 
 		cli, err := h.newOpenstackCliByProject(h.Spec.Openstack.Project.Name)
 		if err != nil {
-			continue
+			log.Errorf("openstack: failed to new openstack cli by project %s(%v)", h.Spec.Openstack.Project.Name, err)
+			return err
 		}
 
 		createdShareNet, err := h.Openstack.CreateShareNetwork(
@@ -26,6 +28,7 @@ func (h *Helper) createShareFsNetworks() error {
 			h.genShareNetworkCreationOpts(shareNet, network.ID, network.Subnets[0].ID),
 		)
 		if err != nil {
+			log.Errorf("openstack: failed to create share network %s(%v)", shareNet, err)
 			return err
 		}
 
@@ -44,7 +47,7 @@ func (h *Helper) deleteShareFsNetworks() error {
 		name := fmt.Sprintf("%s-%s_%s", base.ShareNetPrefix, h.Spec.Openstack.Project.Name, network.Name)
 		shareNet, err := h.Openstack.GetShareNetworkByName(sharenetworks.ListOpts{Name: name, ProjectID: h.Spec.Openstack.Project.ID})
 		if err != nil {
-			log.Errorf("openstack: share network %s not found(%v)", shareNet.Name, err)
+			log.Errorf("openstack: share network %s not found(%v)", name, err)
 			continue
 		}
 
@@ -55,11 +58,11 @@ func (h *Helper) deleteShareFsNetworks() error {
 
 		err = h.Openstack.DeleteShareNetwork(cli.Share, shareNet.ID)
 		if err != nil {
-			log.Errorf("openstack: failed to delete share network %s(%v)", shareNet.Name, err)
+			log.Errorf("openstack: failed to delete share network %s(%v)", name, err)
 			return err
 		}
 
-		log.Infof("openstack: share network %s is deleted successfully", shareNet.Name)
+		log.Infof("openstack: share network %s is deleted successfully", name)
 	}
 
 	return nil
@@ -76,8 +79,8 @@ func (h *Helper) newOpenstackCliByProject(project string) (*openstack.Helper, er
 		openstack.AuthUrl(h.Spec.Openstack.Auth.Url),
 		openstack.ProjectName(project),
 		openstack.ProjectDomainName(h.Spec.Openstack.Auth.Project.Domain.Name),
-		openstack.Username(h.Spec.Openstack.Auth.Username),
-		openstack.Password(h.Spec.Openstack.Auth.Password),
+		openstack.Username(h.Spec.Openstack.User.Name),
+		openstack.Password(h.genUserPassword(h.Spec.Openstack.User.Name)),
 	)
 }
 

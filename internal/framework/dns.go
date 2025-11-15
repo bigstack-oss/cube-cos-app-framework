@@ -6,6 +6,7 @@ import (
 
 	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/recordsets"
 	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/zones"
+	log "go-micro.dev/v5/logger"
 )
 
 func (h *Helper) createDnsRecordForRegistry() error {
@@ -15,18 +16,33 @@ func (h *Helper) createDnsRecordForRegistry() error {
 		Email: strings.TrimSuffix(fmt.Sprintf("admin@%s", tld), "."),
 	})
 	if err != nil {
-		return err
+		if strings.Contains(err.Error(), "Duplicate Zone") {
+			log.Infof("framework: dns zone %s already exists, fetching existing zone", tld)
+			zone, err = h.Openstack.GetDnsZoneByName(tld)
+			if err != nil {
+				log.Errorf("framework: failed to get dns zone %s (%v)", tld, err)
+				return err
+			}
+		} else {
+			log.Errorf("framework: failed to create dns zone %s (%v)", tld, err)
+			return err
+		}
 	}
 
 	_, err = h.Openstack.CreateDnsRecord(
 		zone.ID,
 		recordsets.CreateOpts{
-			Name:    h.getInternalRegistryDomainName(),
+			Name:    h.Spec.Framework.Name + "." + h.getInternalRegistryDomainName() + ".",
 			Type:    "A",
 			TTL:     300,
 			Records: []string{h.getInternalRegistryFloatingIp()},
 		},
 	)
+	if err != nil {
+		if strings.Contains(err.Error(), "Duplicate RecordSet") {
+			return nil
+		}
+	}
 
 	return err
 }

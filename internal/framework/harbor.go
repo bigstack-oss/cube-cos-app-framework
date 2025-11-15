@@ -26,10 +26,9 @@ func (h *Helper) customizeHarborValues() (*values.Options, error) {
 	return &values.Options{
 		Values: []string{
 			fmt.Sprintf("externalURL=%s", h.findCubeAppsHttpUrl()),
-			fmt.Sprintf("expose.loadBalancer.IP=%s", h.findRegistryFloatingIp()),
-			"global.defaultStorageClass=csi-cinder",
-			"adminPassword=admin",
-			"ingress.core.ingressClassName=nginx",
+			fmt.Sprintf("expose.ingress.hosts.core=%s", h.findCubeAppsDomainName()),
+			"harborAdminPassword=admin",
+			"expose.ingress.className=nginx",
 			"persistence.persistentVolumeClaim.registry.size=50Gi",
 			"trivy.enabled=false",
 		},
@@ -44,6 +43,16 @@ func (h *Helper) findCubeAppsHttpUrl() string {
 	}
 
 	return "https://registry.cubecos.com"
+}
+
+func (h *Helper) findCubeAppsDomainName() string {
+	for _, repo := range h.Spec.Framework.ExtensionRepos {
+		if repo.Name == "cube-apps" {
+			return repo.DomainName
+		}
+	}
+
+	return "registry.cubecos.com"
 }
 
 func (h *Helper) findRegistryFloatingIp() string {

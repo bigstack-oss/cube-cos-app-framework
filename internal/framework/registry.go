@@ -1,6 +1,8 @@
 package framework
 
 import (
+	"strings"
+
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/harbor"
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/configs"
 	log "go-micro.dev/v5/logger"
@@ -22,7 +24,11 @@ func (h *Helper) createRegistryProject() error {
 
 	_, err = cli.CreateProject("extensions")
 	if err != nil {
-		log.Errorf("harbor: failed to create project extensions(%v)", err)
+		if strings.Contains(err.Error(), "createProjectConflict") {
+			return nil
+		}
+
+		log.Errorf("harbor: failed to create project extensions(%s)", err.Error())
 		return err
 	}
 

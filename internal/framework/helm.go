@@ -86,7 +86,7 @@ func (h *Helper) upgradeOrInstallCharts(charts ...*helm.Chart) error {
 
 		err = h.applyCustomValuesIfNeeded(helm, c)
 		if err != nil {
-			log.Errorf("framework: failed to apply custom values(%v)", err)
+			log.Errorf("framework: failed to apply %s custom values(%v)", c.Release, err)
 			return err
 		}
 

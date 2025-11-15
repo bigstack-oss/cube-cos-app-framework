@@ -42,7 +42,7 @@ func (h *Helper) generateExtensionRepoOpts(repo configs.ExtensionRepo, secretRef
 		Type:     "catalog.cattle.io.clusterrepo",
 		Metadata: rancher.Metadata{Name: repo.Name},
 		Spec: rancher.RepoSpec{
-			Url:                   repo.OciUrl,
+			Url:                   repo.OciUrl + "/cube-portal",
 			InsecurePlainHttp:     repo.InsecurePlainHttp,
 			InsecureSkipTlsVerify: repo.InsecureSkipVerify,
 			ClientSecret: rancher.SecretRef{

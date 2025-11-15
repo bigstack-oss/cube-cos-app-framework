@@ -11,12 +11,12 @@ var (
 	spec = configs.DefaultSpec
 )
 
-func NewInstallCmd() *cobra.Command {
+func NewCreateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "framework",
 		Short: "",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return install()
+			return create()
 		},
 	}
 
@@ -24,7 +24,7 @@ func NewInstallCmd() *cobra.Command {
 	return cmd
 }
 
-func install() error {
+func create() error {
 	h, err := framework.NewHelper(spec)
 	if err != nil {
 		log.Errorf("framework: failed to init helper(%v)", err)

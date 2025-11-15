@@ -69,7 +69,6 @@ func (h *Helper) unlimitProjectQuotas() error {
 func (h *Helper) assignUserToProject() error {
 	memberRoles, err := h.getMemberAndRoleIdPairs()
 	if err != nil {
-		log.Errorf("openstack: failed to get member and role id pairs(%v)", err)
 		return err
 	}
 
@@ -157,11 +156,13 @@ func (h *Helper) getMemberAndRoleIdPairs() ([]memberAndRoleId, error) {
 	for _, r := range h.Spec.Openstack.Roles {
 		role, err := h.Openstack.GetRoleByName(r.Name)
 		if err != nil {
+			log.Errorf("openstack: failed to get role %s by name(%v)", r.Name, err)
 			return nil, err
 		}
 
 		member, err := h.Openstack.GetUserByName(r.User)
 		if err != nil {
+			log.Errorf("openstack: failed to get user %s by name(%v)", r.User, err)
 			return nil, err
 		}
 

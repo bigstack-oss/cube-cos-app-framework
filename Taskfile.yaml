@@ -3,7 +3,7 @@ version: "3"
 vars:
   appctl: "appctl"
   devCosUser: "root"
-  devCosIp: "10.32.45.1"
+  devCosIp: "10.32.36.10"
   devE2EIp: "10.32.200.12"
   devE2EContainer: "3c_3p_5s"
   devE2ENode: "10.1.0.1"

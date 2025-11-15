@@ -89,7 +89,7 @@ openstack:
       user: "admin_cli"
     - name: "admin"
       user: "admin (IAM)"
-    - name: "_member_"
+    - name: "admin"
       user: "app-framework"
   endpointType: "publicURL"
   routers:

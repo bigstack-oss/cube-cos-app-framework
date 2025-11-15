@@ -482,7 +482,7 @@ func (h *Helper) applyIngressLoadBalancer() error {
 			InternalTrafficPolicy: &internalPolicy,
 			SessionAffinity:       corev1.ServiceAffinityNone,
 			Selector: map[string]string{
-				"app": "ingress-nginx",
+				"app.kubernetes.io/name": "rke2-ingress-nginx",
 			},
 			LoadBalancerIP: h.Spec.Framework.Networks.LoadBalancer.Ip,
 			Ports: []corev1.ServicePort{
