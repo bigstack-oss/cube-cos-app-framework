@@ -19,9 +19,7 @@ var (
 			ExtensionRepos: []ExtensionRepo{
 				{
 					Name:               "cube-apps",
-					HttpUrl:            "https://test-9-app-fw-2.registry.cubecos.com",
-					DomainName:         "test-9-app-fw-2.registry.cubecos.com",
-					OciUrl:             "oci://test-9-app-fw-2.registry.cubecos.com/extensions",
+					Tld:                "cubecos.com",
 					Username:           "admin",
 					Password:           "admin",
 					InsecureSkipVerify: true,
@@ -49,6 +47,7 @@ var (
 				Helm: Helm{
 					Charts: []helm.Chart{
 						{
+							Type:      "kubernetes-interface-driver",
 							Release:   "cinder-csi",
 							Version:   "2.31.2",
 							Namespace: "kube-system",
@@ -57,6 +56,7 @@ var (
 							},
 						},
 						{
+							Type:      "kubernetes-interface-driver",
 							Release:   "manila-csi",
 							Version:   "2.31.1",
 							Namespace: "kube-system",
@@ -65,6 +65,7 @@ var (
 							},
 						},
 						{
+							Type:      "kubernetes-interface-driver",
 							Release:   "csi-driver-nfs",
 							Version:   "v4.9.0",
 							Namespace: "kube-system",
@@ -73,19 +74,12 @@ var (
 							},
 						},
 						{
+							Type:      "kubernetes-interface-driver",
 							Release:   "openstack-cloud-controller-manager",
 							Version:   "1.3.0",
 							Namespace: "kube-system",
 							Tgz: helm.Tgz{
 								Local: "/opt/appfw/plugins/charts/openstack-cloud-controller-manager-1.3.0.tgz",
-							},
-						},
-						{
-							Release:   "keycloak",
-							Version:   "18.1.1-cube",
-							Namespace: "keycloak",
-							Tgz: helm.Tgz{
-								Local: "/opt/appfw/plugins/charts/keycloak-18.1.1-cube.tgz",
 							},
 						},
 					},
@@ -101,18 +95,25 @@ var (
 							Local: "/opt/appfw/plugins/charts/harbor-1.18.0.tgz",
 						},
 					},
+					{
+						Release:   "keycloak",
+						Version:   "18.1.1-cube",
+						Namespace: "keycloak",
+						Tgz: helm.Tgz{
+							Local: "/opt/appfw/plugins/charts/keycloak-18.1.1-cube.tgz",
+						},
+					},
 				},
 			},
 			Registry: Registry{
 				Protocol: "http",
 				Port:     5080,
 				Configs: map[string]Config{
-					"registry.cubecos.com": {
-						Name:       "internal-oci-registry",
-						Username:   "admin",
-						Password:   "admin",
-						FloatingIp: "10.32.36.100",
-						Registry:   rancher.Registry{InsecureSkipVerify: true},
+					"registry.local": {
+						Name:     "internal-oci-registry",
+						Username: "admin",
+						Password: "admin",
+						Registry: rancher.Registry{InsecureSkipVerify: true},
 					},
 				},
 				Mirrors: []Mirror{

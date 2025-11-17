@@ -66,6 +66,9 @@ func (h *Helper) genKubernetesSpec(machinePool map[string]rancher.OpenstackMachi
 		Metadata: rancher.Metadata{
 			Namespace: "fleet-default",
 			Name:      h.Spec.Kubernetes.Name,
+			Labels: map[string]string{
+				"managedBy": "cubecosAppControl",
+			},
 		},
 		Spec: rancher.Spec{
 			RkeConfig: rancher.RkeConfig{

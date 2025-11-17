@@ -14,6 +14,7 @@ type Framework struct {
 
 type ExtensionRepo struct {
 	Name               string `json:"name"`
+	Tld                string `json:"tld"`
 	HttpUrl            string `json:"httpUrl"`
 	OciUrl             string `json:"ociUrl"`
 	DomainName         string `json:"domainName"`

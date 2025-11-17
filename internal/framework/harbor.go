@@ -38,21 +38,21 @@ func (h *Helper) customizeHarborValues() (*values.Options, error) {
 func (h *Helper) findCubeAppsHttpUrl() string {
 	for _, repo := range h.Spec.Framework.ExtensionRepos {
 		if repo.Name == "cube-apps" {
-			return repo.HttpUrl
+			return fmt.Sprintf("https://%s.%s", h.Spec.Framework.Name, repo.Tld)
 		}
 	}
 
-	return "https://registry.cubecos.com"
+	return "https://registry.local"
 }
 
 func (h *Helper) findCubeAppsDomainName() string {
 	for _, repo := range h.Spec.Framework.ExtensionRepos {
 		if repo.Name == "cube-apps" {
-			return repo.DomainName
+			return fmt.Sprintf("%s.%s", h.Spec.Framework.Name, repo.Tld)
 		}
 	}
 
-	return "registry.cubecos.com"
+	return "registry.local"
 }
 
 func (h *Helper) findRegistryFloatingIp() string {

@@ -50,6 +50,10 @@ github.com/bigstack-oss/bigstack-dependency-go v0.0.0-20251111110028-f4c61f0bed2
 github.com/bigstack-oss/bigstack-dependency-go v0.0.0-20251111110028-f4c61f0bed2c/go.mod h1:uXE8BAReC6uZfTJi0t/VXy4xCjHyBx5li38sOa/GC5Q=
 github.com/bigstack-oss/bigstack-dependency-go v0.0.0-20251115154850-f4a67f227904 h1:gwqBLNbrgCaUjIL8mQy3xyRbzl46oyiQLahujW+i0Q0=
 github.com/bigstack-oss/bigstack-dependency-go v0.0.0-20251115154850-f4a67f227904/go.mod h1:uXE8BAReC6uZfTJi0t/VXy4xCjHyBx5li38sOa/GC5Q=
+github.com/bigstack-oss/bigstack-dependency-go v0.0.0-20251117080505-24d06dab7fc5 h1:rfsF7uyt3h+P9GPDdKCuATc+0wH+BqVaZ2nW3vTTdho=
+github.com/bigstack-oss/bigstack-dependency-go v0.0.0-20251117080505-24d06dab7fc5/go.mod h1:uXE8BAReC6uZfTJi0t/VXy4xCjHyBx5li38sOa/GC5Q=
+github.com/bigstack-oss/bigstack-dependency-go v0.0.0-20251117083858-a127cec3b0e0 h1:Clbcjp6npk2jO6J4BEnct1Od6Ad/JVXFatOXQiRd2ZI=
+github.com/bigstack-oss/bigstack-dependency-go v0.0.0-20251117083858-a127cec3b0e0/go.mod h1:uXE8BAReC6uZfTJi0t/VXy4xCjHyBx5li38sOa/GC5Q=
 github.com/blang/semver/v4 v4.0.0 h1:1PFHFE6yCCTv8C1TeyNNarDzntLi7wMI5i/pzqYIsAM=
 github.com/blang/semver/v4 v4.0.0/go.mod h1:IbckMUScFkM3pff0VJDNKRiT6TG/YpiHIM2yvyW5YoQ=
 github.com/bshuster-repo/logrus-logstash-hook v1.0.0 h1:e+C0SB5R1pu//O4MQ3f9cFuPGoOVeF2fE4Og9otCc70=

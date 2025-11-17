@@ -36,8 +36,8 @@ func (h *Helper) checkIfChartExists(charts []helm.Chart) error {
 	return nil
 }
 
-func (h *Helper) applyBaseServices() error {
-	charts, err := h.genValueOverridedBaseCharts()
+func (h *Helper) applyDriverCharts() error {
+	charts, err := h.genValueOverridedDriverCharts()
 	if err != nil {
 		return err
 	}
@@ -50,8 +50,8 @@ func (h *Helper) applyBaseServices() error {
 	return nil
 }
 
-func (h *Helper) applyImageChartRegistry() error {
-	charts, err := h.genValueOverridedRegistryCharts()
+func (h *Helper) applyApplicationCharts() error {
+	charts, err := h.genValueOverridedApplicationCharts()
 	if err != nil {
 		return err
 	}

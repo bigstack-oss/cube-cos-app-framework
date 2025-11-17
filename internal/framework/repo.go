@@ -1,6 +1,8 @@
 package framework
 
 import (
+	"fmt"
+
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/rancher"
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/configs"
 	log "go-micro.dev/v5/logger"
@@ -42,7 +44,7 @@ func (h *Helper) generateExtensionRepoOpts(repo configs.ExtensionRepo, secretRef
 		Type:     "catalog.cattle.io.clusterrepo",
 		Metadata: rancher.Metadata{Name: repo.Name},
 		Spec: rancher.RepoSpec{
-			Url:                   repo.OciUrl + "/cube-portal",
+			Url:                   fmt.Sprintf("oci://%s.%s/extensions/cube-portal", h.Spec.Framework.Name, repo.Tld),
 			InsecurePlainHttp:     repo.InsecurePlainHttp,
 			InsecureSkipTlsVerify: repo.InsecureSkipVerify,
 			ClientSecret: rancher.SecretRef{

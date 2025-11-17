@@ -7,7 +7,7 @@ import (
 	log "go-micro.dev/v5/logger"
 )
 
-func (h *Helper) genValueOverridedBaseCharts() ([]*helm.Chart, error) {
+func (h *Helper) genValueOverridedDriverCharts() ([]*helm.Chart, error) {
 	var charts []*helm.Chart
 
 	for _, chart := range h.Spec.Kubernetes.Plugins.Helm.Charts {
@@ -23,7 +23,7 @@ func (h *Helper) genValueOverridedBaseCharts() ([]*helm.Chart, error) {
 	return charts, nil
 }
 
-func (h *Helper) genValueOverridedRegistryCharts() ([]*helm.Chart, error) {
+func (h *Helper) genValueOverridedApplicationCharts() ([]*helm.Chart, error) {
 	var charts []*helm.Chart
 
 	for _, chart := range h.Spec.Kubernetes.Applications.Charts {

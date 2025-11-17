@@ -9,8 +9,10 @@ import (
 )
 
 func (h *Helper) createRegistryProject() error {
-	access := h.getCubeAppsAccess()
+	h.setVipToPrimaryDnsServer()
+	defer h.restoreOriginalDnsList()
 
+	access := h.getCubeAppsAccess()
 	cli, err := harbor.NewHelper(
 		harbor.Url(access.HttpUrl),
 		harbor.Username(access.Username),
@@ -38,6 +40,7 @@ func (h *Helper) createRegistryProject() error {
 func (h *Helper) getCubeAppsAccess() configs.ExtensionRepo {
 	for _, repo := range configs.DefaultSpec.Framework.ExtensionRepos {
 		if repo.Name == "cube-apps" {
+			repo.HttpUrl = h.findCubeAppsHttpUrl()
 			return repo
 		}
 	}

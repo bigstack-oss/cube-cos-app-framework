@@ -390,14 +390,14 @@ func (h *Helper) CreateKubernetesResources() error {
 		return err
 	}
 
-	// // test area
-	// h.Spec.Openstack.Project.ID = "45531abfab114e3ab1851ecc7086a378"
-	// h.Spec.Kubernetes.ID = "c-m-xk4rhfnv"
-	// status, err := h.Rancher.WaitKubernetesActive("test-9-app-fw-2")
+	// // // test area
+	// h.Spec.Openstack.Project.ID = "d5632ae77cf04739981f9ac2d9050303"
+	// h.Spec.Kubernetes.ID = "c-m-xc6xnxr5"
+	// status, err := h.Rancher.WaitKubernetesActive("test-10-app-fw-2")
 	// if err != nil {
 	// 	return err
 	// }
-	// // test area
+	// // // test area
 
 	config, err := h.Rancher.GetKubernetesConfig(status.ClusterName)
 	if err != nil {
@@ -419,7 +419,7 @@ func (h *Helper) CreateKubernetesResources() error {
 		return err
 	}
 
-	err = h.applyBaseServices()
+	err = h.applyDriverCharts()
 	if err != nil {
 		return err
 	}
@@ -436,7 +436,7 @@ func (h *Helper) CreateKubernetesResources() error {
 		return err
 	}
 
-	err = h.applyImageChartRegistry()
+	err = h.applyApplicationCharts()
 	if err != nil {
 		return err
 	}
@@ -576,5 +576,9 @@ func (h *Helper) investigatePortAccess() error {
 		return err
 	}
 
+	return nil
+}
+
+func (h *Helper) ListFramework() error {
 	return nil
 }
