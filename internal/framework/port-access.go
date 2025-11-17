@@ -61,9 +61,14 @@ func (h *Helper) printPortAccessResult() {
 	}
 
 	log.Infof("framework: %s port access result:", h.Spec.Framework.Name)
-	for line := range strings.SplitSeq(logs, "\n") {
-		if strings.TrimSpace(line) != "" {
-			log.Infof("framework: %s", line)
+	for raw := range strings.SplitSeq(logs, "\n") {
+		lower := strings.ToLower(raw)
+		if strings.Contains(lower, "connect") {
+			continue
+		}
+
+		if strings.TrimSpace(raw) != "" {
+			log.Infof("framework: %s", raw)
 		}
 	}
 }
@@ -136,11 +141,11 @@ NC='\033[0m' # No Color
 SVC_HOST_PORT_PAIRS='%s'
 
 while IFS=$'\t' read -r name url; do
-	telnet ${url}
+	telnet ${url} </dev/null
 	if [[ ${?} -eq 0 ]]; then
-		echo -e "[${GREEN}✔${NC}] ${GREEN}OK${NC}   ${name} ${url}"
+		echo -e "[${GREEN}✔${NC}] ${GREEN}OK${NC}     ${name} ${url}"
 	else
-		echo -e "[${RED}✗${NC}] ${RED}FAIL${NC} ${name} ${url}"
+		echo -e "[${RED}✗${NC}] ${RED}FAILED${NC} ${name} ${url}"
 	fi
 done < <(echo "${SVC_HOST_PORT_PAIRS}" | jq -r 'to_entries[] | "\(.key)\t\(.value)"')
 `, string(b)), nil

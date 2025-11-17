@@ -1,0 +1,46 @@
+ingress:
+  enabled: true
+  rules:
+    - host: ""
+      paths:
+        - path: /auth
+          pathType: Prefix
+
+extraEnv: |
+  - name: KEYCLOAK_USER
+    value: admin
+  - name: KEYCLOAK_PASSWORD
+    value: admin
+  - name: PROXY_ADDRESS_FORWARDING
+    value: "true"
+  - name: KEYCLOAK_DEFAULT_THEME
+    value: cube
+
+extraInitContainers: |
+  - name: theme-provider
+    image: busybox
+    imagePullPolicy: IfNotPresent
+    command:
+      - sh
+    args:
+      - -c
+      - |
+        echo "Copying theme..."
+        tar -xf /tmp/cube.tar.gz --strip-components=2 -C /theme
+    volumeMounts:
+      - name: theme
+        mountPath: /theme
+      - name: cube-theme-volume
+        mountPath: /tmp/cube.tar.gz
+        subPath: cube.tar.gz
+
+extraVolumeMounts: |
+  - name: theme
+    mountPath: /opt/jboss/keycloak/themes/cube
+
+extraVolumes: |
+  - name: theme
+    emptyDir: {}
+  - name: cube-theme-volume
+    configMap:
+      name: cube-theme
