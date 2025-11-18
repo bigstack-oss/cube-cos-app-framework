@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/harbor"
+	"github.com/bigstack-oss/bigstack-dependency-go/pkg/wait"
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/configs"
 	log "go-micro.dev/v5/logger"
 )
@@ -11,6 +12,7 @@ import (
 func (h *Helper) createRegistryProject() error {
 	h.setVipToPrimaryDnsServer()
 	defer h.restoreOriginalDnsList()
+	wait.Seconds(5)
 
 	access := h.getCubeAppsAccess()
 	cli, err := harbor.NewHelper(
@@ -30,7 +32,7 @@ func (h *Helper) createRegistryProject() error {
 			return nil
 		}
 
-		log.Errorf("harbor: failed to create project extensions(%s)", err.Error())
+		log.Errorf("harbor: failed to create project for extensions(%s)", err.Error())
 		return err
 	}
 

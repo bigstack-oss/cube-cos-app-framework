@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/kubernetes"
@@ -42,7 +43,6 @@ func (h *Helper) createKubernetes(machinePool map[string]rancher.OpenstackMachin
 	}
 
 	log.Infof("rancher: cluster is created successfully (%s %s)", cluster.Name, cluster.Id)
-	h.Spec.Kubernetes.Id = cluster.Name
 	return cluster, nil
 }
 
@@ -495,15 +495,25 @@ func (h *Helper) applyIngressLoadBalancer() error {
 					Protocol:   corev1.ProtocolTCP,
 					TargetPort: intstr.FromInt(443),
 				},
+				{
+					Name:       "http",
+					Port:       80,
+					Protocol:   corev1.ProtocolTCP,
+					TargetPort: intstr.FromInt(80),
+				},
 			},
 		},
 	})
-	if err != nil {
-		log.Errorf("framework: failed to create ingress load balancer(%v)", err)
-		return err
+	if err == nil {
+		return nil
 	}
 
-	return nil
+	if strings.Contains(err.Error(), "already exists") {
+		return nil
+	}
+
+	log.Errorf("framework: failed to create ingress load balancer(%v)", err)
+	return err
 }
 
 func (h *Helper) waitForNeededCrdsToBeActive() error {

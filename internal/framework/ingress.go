@@ -30,17 +30,3 @@ func (h *Helper) customizeIngressNginxValues() (*values.Options, error) {
 		},
 	}, nil
 }
-
-func (h *Helper) applyIngresses() error {
-	err := h.applyKeycloakIngress()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (h *Helper) applyKeycloakIngress() error {
-
-	return nil
-}

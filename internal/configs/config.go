@@ -19,7 +19,7 @@ var (
 			ExtensionRepos: []ExtensionRepo{
 				{
 					Name:               "cube-apps",
-					Tld:                "cubecos.com",
+					Tld:                "registry.cubecos.com",
 					Username:           "admin",
 					Password:           "admin",
 					InsecureSkipVerify: true,
@@ -36,12 +36,12 @@ var (
 			Master: Machine{
 				Name:     "master",
 				Quantity: 1,
-				Flavor:   Flavor{Name: "t2.xlarge"},
+				Flavor:   Flavor{Name: "t2.xxlarge"},
 			},
 			Worker: Machine{
 				Name:     "worker",
 				Quantity: 1,
-				Flavor:   Flavor{Name: "t2.xlarge"},
+				Flavor:   Flavor{Name: "t2.xxlarge"},
 			},
 			Plugins: Plugins{
 				Helm: Helm{
@@ -109,7 +109,7 @@ var (
 				Protocol: "http",
 				Port:     5080,
 				Configs: map[string]Config{
-					"registry.local": {
+					"registry.cubecos.com": {
 						Name:     "internal-oci-registry",
 						Username: "admin",
 						Password: "admin",

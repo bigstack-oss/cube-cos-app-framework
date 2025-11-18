@@ -42,7 +42,7 @@ func (h *Helper) findCubeAppsHttpUrl() string {
 		}
 	}
 
-	return "https://registry.local"
+	return "https://registry.cubecos.com"
 }
 
 func (h *Helper) findCubeAppsDomainName() string {
@@ -52,7 +52,7 @@ func (h *Helper) findCubeAppsDomainName() string {
 		}
 	}
 
-	return "registry.local"
+	return "registry.cubecos.com"
 }
 
 func (h *Helper) findRegistryFloatingIp() string {

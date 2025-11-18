@@ -390,15 +390,7 @@ func (h *Helper) CreateKubernetesResources() error {
 		return err
 	}
 
-	// // // test area
-	// h.Spec.Openstack.Project.ID = "d5632ae77cf04739981f9ac2d9050303"
-	// h.Spec.Kubernetes.ID = "c-m-xc6xnxr5"
-	// status, err := h.Rancher.WaitKubernetesActive("test-10-app-fw-2")
-	// if err != nil {
-	// 	return err
-	// }
-	// // // test area
-
+	h.Spec.Kubernetes.ID = status.ClusterName
 	config, err := h.Rancher.GetKubernetesConfig(status.ClusterName)
 	if err != nil {
 		return err
@@ -429,14 +421,17 @@ func (h *Helper) CreateKubernetesResources() error {
 		return err
 	}
 
-	h.applyIngressLoadBalancer()
-
-	err = h.applyIngresses()
+	err = h.applyIngressLoadBalancer()
 	if err != nil {
 		return err
 	}
 
 	err = h.applyApplicationCharts()
+	if err != nil {
+		return err
+	}
+
+	err = h.waitForAllPodsToBeReady()
 	if err != nil {
 		return err
 	}

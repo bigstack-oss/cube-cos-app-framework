@@ -47,7 +47,8 @@ func (h *Helper) createDnsRecordForRegistry() error {
 		}
 	}
 
-	return err
+	log.Infof("framework: created dns record for internal registry(%s)", h.getInternalRegistryDomainName())
+	return nil
 }
 
 func (h *Helper) getInternalRegistryTld() string {
