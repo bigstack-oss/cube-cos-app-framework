@@ -13,20 +13,20 @@ var (
 	spec = configs.DefaultSpec
 )
 
-func NewCreateCmd() *cobra.Command {
+func NewDeleteCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "project",
 		Short: "",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return create()
+			return delete()
 		},
 	}
 
-	project.ParseCreationFlags(cmd, &spec)
+	project.ParseDeletionFlags(cmd, &spec)
 	return cmd
 }
 
-func create() error {
+func delete() error {
 	if base.Welcome {
 		base.PrintWelcomeMessages()
 	}
@@ -37,10 +37,16 @@ func create() error {
 		return err
 	}
 
-	h.PrintInfraSetupMessage()
-	err = h.CreateOpenstackResources()
+	err = h.SyncProjectIdentity()
 	if err != nil {
-		log.Errorf("project: failed to apply openstack components(%v)", err)
+		log.Errorf("project: failed to sync project %s id(%v)", h.Spec.Framework.Name, err)
+		return err
+	}
+
+	h.PrintTenantDeletingMessage()
+	err = h.DeleteOpenstackResources()
+	if err != nil {
+		log.Errorf("project: failed to delete openstack components(%v)", err)
 		return err
 	}
 

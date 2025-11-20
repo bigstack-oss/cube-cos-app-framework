@@ -1,29 +1,29 @@
 package project
 
 import (
+	"os"
+
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/configs"
 	"github.com/spf13/cobra"
+	log "go-micro.dev/v5/logger"
 )
-
-func ParseCheckPrereqFlags(cmd *cobra.Command, spec *configs.Spec) {
-	parseCommonFlags(cmd, spec)
-}
-
-func ParseCheckAccessFlags(cmd *cobra.Command, spec *configs.Spec) {
-	cmd.Flags().StringVarP(&spec.Framework.Name, "name", "", spec.Framework.Name, "Name for the framework")
-	cmd.MarkFlagRequired("name")
-}
 
 func ParseCreationFlags(cmd *cobra.Command, spec *configs.Spec) {
 	parseCommonFlags(cmd, spec)
-	cmd.MarkFlagRequired("name")
-	cmd.MarkFlagRequired("net.public")
-	cmd.MarkFlagRequired("net.mgmt")
+	err := cmd.MarkFlagRequired("name")
+	if err != nil {
+		log.Errorf("framework: name is required flag(%v)", err)
+		os.Exit(1)
+	}
 }
 
 func ParseDeletionFlags(cmd *cobra.Command, spec *configs.Spec) {
 	cmd.Flags().StringVarP(&spec.Framework.Name, "name", "", spec.Framework.Name, "Name for the framework")
-	cmd.MarkFlagRequired("name")
+	err := cmd.MarkFlagRequired("name")
+	if err != nil {
+		log.Errorf("framework: name is required flag(%v)", err)
+		os.Exit(1)
+	}
 }
 
 func parseCommonFlags(cmd *cobra.Command, spec *configs.Spec) {
