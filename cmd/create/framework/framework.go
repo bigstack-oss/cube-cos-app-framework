@@ -2,6 +2,7 @@ package framework
 
 import (
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/configs"
+	"github.com/bigstack-oss/cube-cos-app-framework/internal/definition/base"
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/framework"
 	"github.com/spf13/cobra"
 	log "go-micro.dev/v5/logger"
@@ -25,6 +26,10 @@ func NewCreateCmd() *cobra.Command {
 }
 
 func create() error {
+	if base.Welcome {
+		base.PrintWelcomeMessages()
+	}
+
 	h, err := framework.NewHelper(spec)
 	if err != nil {
 		log.Errorf("framework: failed to init helper(%v)", err)

@@ -31,23 +31,29 @@ type Helper struct {
 func NewHelper(spec configs.Spec) (*Helper, error) {
 	var err error
 	h := &Helper{Spec: spec}
-	defer h.ShowConfig()
 
-	log.Infof("framework: fetching CubeCOS system info")
+	if base.Welcome {
+		defer h.ShowConfig()
+		log.Infof("framework: fetching CubeCOS system info")
+	}
 	err = h.initBase()
 	if err != nil {
 		log.Errorf("framework: failed to init base(%v)", err)
 		return nil, err
 	}
 
-	log.Infof("framework: initializing openstack, rancher, and k8s configurations")
+	if base.Welcome {
+		log.Infof("framework: initializing openstack, rancher, and k8s configurations")
+	}
 	err = h.initConf()
 	if err != nil {
 		log.Errorf("framework: failed to init conf(%v)", err)
 		return nil, err
 	}
 
-	log.Infof("framework: initializing openstack, rancher, and k8s helpers")
+	if base.Welcome {
+		log.Infof("framework: initializing openstack, rancher, and k8s helpers")
+	}
 	err = h.initClis()
 	if err != nil {
 		log.Errorf("framework: failed to init clis(%v)", err)
@@ -574,6 +580,75 @@ func (h *Helper) investigatePortAccess() error {
 	return nil
 }
 
-func (h *Helper) ListFramework() error {
-	return nil
+func (h *Helper) ListFramework() (*rancher.ListClusterResponse, error) {
+	frameworks, err := h.Rancher.ListKubernetes()
+	if err != nil {
+		log.Errorf("framework: failed to list kubernetes(%v)", err)
+		return nil, err
+	}
+
+	filtered := &rancher.ListClusterResponse{
+		Data: []rancher.ListClusterData{},
+	}
+
+	for _, framework := range frameworks.Data {
+		value, found := framework.Labels["managedBy"]
+		if !found {
+			continue
+		}
+
+		if value == "cubecosAppControl" {
+			filtered.Data = append(filtered.Data, framework)
+		}
+	}
+
+	return filtered, nil
+}
+
+func (h *Helper) PrintFrameworksBySpecifiedFormat(frameworks *rancher.ListClusterResponse, format string) {
+	switch format {
+	case "json":
+		b, err := json.Marshal(frameworks.Data)
+		if err != nil {
+			log.Errorf("framework: failed to marshal frameworks to json(%v)", err)
+			return
+		}
+		fmt.Println(string(b))
+	default:
+		if base.Header {
+			h.printFieldsByArgs()
+		}
+
+		for _, framework := range frameworks.Data {
+			h.printFrameworkByArgs(framework)
+		}
+	}
+}
+
+func (h *Helper) printFieldsByArgs() {
+	if base.NameOnly {
+		fmt.Printf("NAME\n")
+		return
+	}
+
+	if base.Header {
+		fmt.Printf("%-20s %-20s %-20s %-20s %-20s %-20s\n", "ID", "NAME", "PROVIDER", "NODE COUNT", "STATUS", "CREATED")
+	}
+}
+
+func (h *Helper) printFrameworkByArgs(framework rancher.ListClusterData) {
+	if base.NameOnly {
+		fmt.Printf("%s\n", framework.Name)
+		return
+	}
+
+	fmt.Printf(
+		"%-20s %-20s %-20s %-20d %-20s %-20s\n",
+		framework.Id,
+		framework.Name,
+		framework.Provider,
+		framework.NodeCount,
+		framework.State,
+		framework.Created,
+	)
 }

@@ -2,6 +2,7 @@ package framework
 
 import (
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/configs"
+	"github.com/bigstack-oss/cube-cos-app-framework/internal/definition/base"
 	"github.com/spf13/cobra"
 )
 
@@ -19,6 +20,13 @@ func ParseCreationFlags(cmd *cobra.Command, spec *configs.Spec) {
 	cmd.MarkFlagRequired("name")
 	cmd.MarkFlagRequired("net.public")
 	cmd.MarkFlagRequired("net.mgmt")
+}
+
+func ParseListFlags(cmd *cobra.Command, spec *configs.Spec) {
+	cmd.Flags().BoolVarP(&base.Welcome, "welcome", "", base.Welcome, "Flag to print welcome message")
+	cmd.Flags().BoolVarP(&base.Header, "header", "", base.Header, "Flag to print header")
+	cmd.Flags().BoolVarP(&base.NameOnly, "name.only", "", base.NameOnly, "Flag to print only framework names")
+	cmd.Flags().StringVarP(&base.Format, "format", "", base.Format, "Flag to print output in specified format")
 }
 
 func ParseDeletionFlags(cmd *cobra.Command, spec *configs.Spec) {

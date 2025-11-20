@@ -1,6 +1,8 @@
-package portaccess
+package framework
 
 import (
+	"fmt"
+
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/configs"
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/definition/base"
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/framework"
@@ -12,22 +14,28 @@ var (
 	spec = configs.DefaultSpec
 )
 
-func NewCheckCmd() *cobra.Command {
+func NewListCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "portAccess",
-		Short: "Check the port access between specified app-framework and CubeCOS",
+		Use:   "framework",
+		Short: "",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return check()
+			return list()
 		},
 	}
 
-	framework.ParseCheckAccessFlags(cmd, &spec)
+	framework.ParseListFlags(cmd, &spec)
 	return cmd
 }
 
-func check() error {
+func list() error {
 	if base.Welcome {
 		base.PrintWelcomeMessages()
+	}
+
+	_, found := base.SupportedFormats[base.Format]
+	if !found {
+		log.Errorf("framework: unsupported format %s", base.Format)
+		return fmt.Errorf("framework: unsupported format %s", base.Format)
 	}
 
 	h, err := framework.NewHelper(spec)
@@ -36,5 +44,12 @@ func check() error {
 		return err
 	}
 
-	return h.CheckPortAccess()
+	frameworks, err := h.ListFramework()
+	if err != nil {
+		log.Errorf("framework: failed to list frameworks(%v)", err)
+		return err
+	}
+
+	h.PrintFrameworksBySpecifiedFormat(frameworks, base.Format)
+	return nil
 }
