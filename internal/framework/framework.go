@@ -457,6 +457,11 @@ func (h *Helper) CreateKubernetesResources() error {
 		return err
 	}
 
+	err = h.syncCoreDnsRecord()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
