@@ -54,13 +54,3 @@ func (h *Helper) findCubeAppsDomainName() string {
 
 	return "registry.cubecos.com"
 }
-
-func (h *Helper) findRegistryFloatingIp() string {
-	for _, config := range h.Spec.Kubernetes.Registry.Configs {
-		if config.Name == "internal-oci-registry" {
-			return config.FloatingIp
-		}
-	}
-
-	return ""
-}

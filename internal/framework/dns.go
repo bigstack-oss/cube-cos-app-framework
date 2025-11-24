@@ -81,9 +81,9 @@ func (h *Helper) createDnsRecordForRegistry() error {
 
 func (h *Helper) getInternalRegistryTld() string {
 	zone := ""
-	for domain, config := range h.Spec.Kubernetes.Registry.Configs {
-		if config.Name == "internal-oci-registry" {
-			zone = domain
+	for name, config := range h.Spec.Kubernetes.Registry.Configs {
+		if name == "internal-oci-registry" {
+			zone = config.DomainName
 			break
 		}
 	}
@@ -101,26 +101,14 @@ func (h *Helper) getInternalRegistryTld() string {
 
 func (h *Helper) getInternalRegistryDomainName() string {
 	domainName := ""
-	for domain, config := range h.Spec.Kubernetes.Registry.Configs {
-		if config.Name == "internal-oci-registry" {
-			domainName = domain
+	for name, config := range h.Spec.Kubernetes.Registry.Configs {
+		if name == "internal-oci-registry" {
+			domainName = config.DomainName
 			break
 		}
 	}
 
 	return domainName
-}
-
-func (h *Helper) getInternalRegistryFloatingIp() string {
-	floatingIp := ""
-	for _, config := range h.Spec.Kubernetes.Registry.Configs {
-		if config.Name == "internal-oci-registry" {
-			floatingIp = config.FloatingIp
-			break
-		}
-	}
-
-	return floatingIp
 }
 
 func (h *Helper) setVipToPrimaryDnsServer() {

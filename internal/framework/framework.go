@@ -452,6 +452,16 @@ func (h *Helper) CreateKubernetesResources() error {
 		return err
 	}
 
+	err = h.createRegistryServiceAccount()
+	if err != nil {
+		return err
+	}
+
+	err = h.createRegistryDetailsSecret()
+	if err != nil {
+		return err
+	}
+
 	err = h.applyExtensionRepos()
 	if err != nil {
 		return err

@@ -48,7 +48,7 @@ type Registry struct {
 }
 
 type Config struct {
-	Name             string `json:"name"`
+	DomainName       string `json:"domainName"`
 	Username         string `json:"username"`
 	Password         string `json:"password"`
 	rancher.Registry `json:"registry"`

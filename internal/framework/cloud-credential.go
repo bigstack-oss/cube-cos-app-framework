@@ -50,7 +50,7 @@ func (h *Helper) applyRegistrySecrets() error {
 	}
 
 	for _, config := range h.Spec.Kubernetes.Registry.Configs {
-		secret := h.generateSecretOpts(config.Username, config.Password)
+		secret := h.generateSecretOpts(config.Username, h.Spec.Openstack.Auth.Password)
 		resp, err := h.createRegistrySecret(secret)
 		if err != nil {
 			return err

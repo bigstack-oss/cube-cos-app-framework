@@ -109,11 +109,10 @@ var (
 				Protocol: "http",
 				Port:     5080,
 				Configs: map[string]Config{
-					"registry.cubecos.com": {
-						Name:     "internal-oci-registry",
-						Username: "admin",
-						Password: "admin",
-						Registry: rancher.Registry{InsecureSkipVerify: true},
+					"internal-oci-registry": {
+						DomainName: "registry.cubecos.com",
+						Username:   "appctl",
+						Registry:   rancher.Registry{InsecureSkipVerify: true},
 					},
 				},
 				Mirrors: []Mirror{

@@ -175,8 +175,9 @@ func (h *Helper) genKubernetesSpec(machinePool map[string]rancher.OpenstackMachi
 func (h *Helper) genBuiltInRegistryConfigs() map[string]rancher.Registry {
 	configs := map[string]rancher.Registry{}
 
-	for name, config := range h.Spec.Kubernetes.Registry.Configs {
-		configs[name] = config.Registry
+	for _, config := range h.Spec.Kubernetes.Registry.Configs {
+		hostname := h.Spec.Framework.Name + "." + h.getInternalRegistryDomainName()
+		configs[hostname] = config.Registry
 	}
 
 	return configs
@@ -564,4 +565,36 @@ func areAllCrdsActive(crds apiextensionsv1.CustomResourceDefinitionList, neededC
 	}
 
 	return matchCount == len(neededCrds)
+}
+
+func (h *Helper) createRegistryDetailsSecret() error {
+	err := h.initKubernetesClient()
+	if err != nil {
+		return err
+	}
+
+	h.Kubernetes.SetSecretClient("harbor")
+	_, err = h.Kubernetes.CreateSecret(&corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "registry-details",
+			Namespace: "harbor",
+		},
+		Type: corev1.SecretTypeOpaque,
+		Data: map[string][]byte{
+			"registryUrl":              []byte(h.Spec.Framework.Name + "." + h.getInternalRegistryDomainName()),
+			"registryExtensionProject": []byte("extensions"),
+			"registryServiceAccount":   []byte("appctl"),
+			"registryServicePassword":  []byte(h.Spec.Openstack.Auth.Password),
+		},
+	})
+	if err == nil {
+		log.Info("kubernetes: registry details secret is created successfully")
+		return nil
+	}
+
+	if !kubeErr.IsAlreadyExists(err) {
+		return err
+	}
+
+	return nil
 }
