@@ -28,14 +28,14 @@ tasks:
     cmds:
       - mkdir -p ~/source
       - cp -r ./* ~/source/
-      - cd ~ && tar -cvzf "cube-cos-api-{{.VERSION}}.tar.gz" source
-      - mv ~/cube-cos-api-{{.VERSION}}.tar.gz ~/rpmbuild/SOURCES
+      - cd ~ && tar -cvzf "cube-cos-app-framework-{{.VERSION}}.tar.gz" source
+      - mv ~/cube-cos-app-framework-{{.VERSION}}.tar.gz ~/rpmbuild/SOURCES
       - rm -rf ~/source
   copySpecFile:
     desc: "Copy spec file"
     cmds:
-      - cp ./init/cube-cos-api.spec ~/rpmbuild/SPECS
+      - cp ./init/cube-cos-app-framework.spec ~/rpmbuild/SPECS
   buildRpm:
     desc: "Build the RPM"
     cmds:
-      - rpmbuild -bb --nodeps --define "version {{.VERSION}}" --define "build_number {{.BUILD_NUMBER}}" ~/rpmbuild/SPECS/cube-cos-api.spec
+      - rpmbuild -bb --nodeps --define "version {{.VERSION}}" --define "build_number {{.BUILD_NUMBER}}" ~/rpmbuild/SPECS/cube-cos-app-framework.spec
