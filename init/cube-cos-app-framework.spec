@@ -1,4 +1,4 @@
-Name:           cube-cos-app-framework
+Name:           appctl
 Version:        %{version}
 Release:        1%{?dist}.%{build_number}
 Summary:        App Framework Binary for CubeCOS
@@ -23,7 +23,7 @@ rmdir source
 %build
 GOWORK=off go mod tidy -v
 go clean -v
-GOWORK=off GOOS=linux GOARCH=amd64 go build -o %{name} -v cmd/main.go
+GOWORK=off GOOS=linux GOARCH=amd64 go build -o %{name} -v main.go
 
 %install
 rm -rf $RPM_BUILD_ROOT
