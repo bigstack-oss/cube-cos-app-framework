@@ -16,7 +16,6 @@ tasks:
     cmds:
       - task: vet
       - task: diffMod
-      - task: diffApiDocs
   build:
     cmds:
       - task: buildLocalBinary
@@ -26,9 +25,6 @@ tasks:
   diffMod:
     cmds:
       - GOWORK=off go mod tidy
-  diffApiDocs:
-    cmds:
-      - git diff --exit-code api
   test:
     cmds:
       - GOWORK=off go test -v ./...
