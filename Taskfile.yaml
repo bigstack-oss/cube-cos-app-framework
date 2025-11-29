@@ -1,5 +1,8 @@
 version: "3"
 
+includes:
+  rpm: ./scripts/rpm.yaml
+
 vars:
   appctl: "appctl"
   devCosUser: "root"
