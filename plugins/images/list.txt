@@ -1,5 +1,4 @@
 busybox
-docker.io/bitnami/postgresql:11.11.0-debian-10-r31
 docker.io/busybox:1.32
 docker.io/goharbor/harbor-core:v2.14.0
 docker.io/goharbor/harbor-db:v2.14.0
