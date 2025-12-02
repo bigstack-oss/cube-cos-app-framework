@@ -1,4 +1,4 @@
-Name:           appctl
+Name:           cube-cos-app-framework
 Version:        %{version}
 Release:        1%{?dist}.%{build_number}
 Summary:        App Framework Binary for CubeCOS
