@@ -77,7 +77,7 @@ type Subnet struct {
 	ID              string                   `json:"id"`
 	Name            string                   `json:"name"`
 	IpVersion       gophercloud.IPVersion    `json:"ipVersion"`
-	CIDR            string                   `json:"cidr"`
+	Cidr            string                   `json:"cidr"`
 	GatewayIP       string                   `json:"gatewayIp"`
 	EnableDHCP      bool                     `json:"enableDhcp"`
 	AllocationPools []subnets.AllocationPool `json:"allocationPools"`
@@ -101,7 +101,8 @@ type Rule struct {
 	Direction   rules.RuleDirection `json:"direction"`
 	Protocol    rules.RuleProtocol  `json:"protocol"`
 	EtherType   rules.RuleEtherType `json:"etherType"`
-	CIDR        string              `json:"cidr"`
+	Cidr        string              `json:"cidr"`
+	CidrSource  string              `json:"cidrSource"`
 	PortRange   `json:"portRange"`
 }
 

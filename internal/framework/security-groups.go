@@ -1,7 +1,11 @@
 package framework
 
 import (
+	"fmt"
+
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/configs"
+	"github.com/bigstack-oss/cube-cos-app-framework/internal/cubecos"
+	"github.com/bigstack-oss/cube-cos-app-framework/internal/definition/base"
 	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/security/groups"
 	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/security/rules"
@@ -106,7 +110,7 @@ func (h *Helper) genSubnetCreationOpts(s configs.Subnet, networkID string) subne
 	return subnets.CreateOpts{
 		Name:            s.Name,
 		NetworkID:       networkID,
-		CIDR:            s.CIDR,
+		CIDR:            s.Cidr,
 		IPVersion:       s.IpVersion,
 		GatewayIP:       &s.GatewayIP,
 		EnableDHCP:      &s.EnableDHCP,
@@ -200,7 +204,7 @@ func (h *Helper) applyRulesToSecurityGroup(rulesToCreate []configs.Rule, securit
 			EtherType:      rule.EtherType,
 			PortRangeMin:   rule.PortRange.Min,
 			PortRangeMax:   rule.PortRange.Max,
-			RemoteIPPrefix: rule.CIDR,
+			RemoteIPPrefix: h.genRuleCidr(rule),
 		})
 		if err == nil {
 			log.Infof(
@@ -217,6 +221,42 @@ func (h *Helper) applyRulesToSecurityGroup(rulesToCreate []configs.Rule, securit
 			continue
 		}
 	}
+}
+
+func (h *Helper) genRuleCidr(rule configs.Rule) string {
+	switch rule.CidrSource {
+	case "management":
+		return h.getMgmtNetworkCidr(h.Spec.Framework.Networks.Management)
+	case "vip":
+		return h.getVipNetworkCidr()
+	default:
+		return rule.Cidr
+	}
+}
+
+func (h *Helper) getMgmtNetworkCidr(network string) string {
+	net, err := h.Openstack.GetNetworkByName(networks.ListOpts{Name: network})
+	if err != nil {
+		log.Warnf("openstack: failed to get management network details(%v)", err)
+		return ""
+	}
+
+	subnets, err := h.Openstack.ListSubnets(subnets.ListOpts{NetworkID: net.ID})
+	if err != nil || len(subnets) == 0 {
+		log.Warnf("openstack: failed to list management network subnets(%v)", err)
+		return ""
+	}
+
+	return subnets[0].CIDR
+}
+
+func (h *Helper) getVipNetworkCidr() string {
+	vip, err := cubecos.GetDataCenterVirtualIp(base.ManagementNet)
+	if err != nil {
+		log.Warnf("openstack: failed to get vip address(%v)", err)
+		return ""
+	}
+	return fmt.Sprintf("%s/32", vip)
 }
 
 func (h *Helper) deleteSecurityGroupRules(list []rules.SecGroupRule) {
