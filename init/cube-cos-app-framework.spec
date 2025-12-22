@@ -29,13 +29,13 @@ GOWORK=off GOOS=linux GOARCH=amd64 go build -o appctl -v main.go
 rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/usr/local/bin
 mv appctl $RPM_BUILD_ROOT/usr/local/bin
-mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/cube/app-framework
-cp ./configs/cube-cos-app-framework.yaml.template $RPM_BUILD_ROOT/%{_sysconfdir}/cube/app-framework/cube-cos-app-framework.yaml
+mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/cube/appctl
+cp ./configs/cube-cos-app-framework.yaml.template $RPM_BUILD_ROOT/%{_sysconfdir}/cube/appctl/cube-cos-app-framework.yaml
 mkdir -p $RPM_BUILD_ROOT/%{_unitdir}
-mkdir -p $RPM_BUILD_ROOT/%{_datadir}/cube/app-framework
-cp LICENSE $RPM_BUILD_ROOT/%{_datadir}/cube/app-framework
+mkdir -p $RPM_BUILD_ROOT/%{_datadir}/cube/appctl
+cp LICENSE $RPM_BUILD_ROOT/%{_datadir}/cube/appctl
 
 %files
 /usr/local/bin/appctl
-%{_sysconfdir}/cube/app-framework/cube-cos-app-framework.yaml
-%{_datadir}/cube/app-framework/LICENSE
+%{_sysconfdir}/cube/appctl/cube-cos-app-framework.yaml
+%{_datadir}/cube/appctl/LICENSE
