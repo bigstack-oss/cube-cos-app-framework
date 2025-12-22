@@ -36,12 +36,12 @@ var (
 			Master: Machine{
 				Name:     "master",
 				Quantity: 1,
-				Flavor:   Flavor{Name: "t2.xxlarge"},
+				Flavor:   Flavor{Name: "t2.xlarge"},
 			},
 			Worker: Machine{
 				Name:     "worker",
 				Quantity: 1,
-				Flavor:   Flavor{Name: "t2.xxlarge"},
+				Flavor:   Flavor{Name: "t2.xlarge"},
 			},
 			Plugins: Plugins{
 				Helm: Helm{
