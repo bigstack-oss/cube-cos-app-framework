@@ -64,6 +64,6 @@ func (h *Helper) overrideKeycloakChart(chart helm.Chart) (*helm.Chart, error) {
 
 func (h *Helper) customizeKeycloakValues() (*values.Options, error) {
 	return &values.Options{
-		ValueFiles: []string{"/opt/appfw/values/keycloak.yaml"},
+		ValueFiles: []string{"/opt/appfw/plugins/values/keycloak.yaml"},
 	}, nil
 }
