@@ -44,8 +44,8 @@ github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2/go.mod h1:W
 github.com/aws/aws-sdk-go v1.34.28/go.mod h1:H7NKnBqNVzoTJpGfLrQkkD+ytBA93eiDYi/+8rV9s48=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
-github.com/bigstack-oss/bigstack-dependency-go v0.0.0-20251124034751-6f157e1e294e h1:ZqqEn42q9ONKrFJbsN8mMy7Vnm5YzgQWgxMCqAO7ZCo=
-github.com/bigstack-oss/bigstack-dependency-go v0.0.0-20251124034751-6f157e1e294e/go.mod h1:uXE8BAReC6uZfTJi0t/VXy4xCjHyBx5li38sOa/GC5Q=
+github.com/bigstack-oss/bigstack-dependency-go v0.0.0-20260103181108-c270c6a00615 h1:DGRSziZ/3LNwn2PjLGYrtwxa4OCuI/HrspfJ1fGMOAE=
+github.com/bigstack-oss/bigstack-dependency-go v0.0.0-20260103181108-c270c6a00615/go.mod h1:uXE8BAReC6uZfTJi0t/VXy4xCjHyBx5li38sOa/GC5Q=
 github.com/blang/semver/v4 v4.0.0 h1:1PFHFE6yCCTv8C1TeyNNarDzntLi7wMI5i/pzqYIsAM=
 github.com/blang/semver/v4 v4.0.0/go.mod h1:IbckMUScFkM3pff0VJDNKRiT6TG/YpiHIM2yvyW5YoQ=
 github.com/bshuster-repo/logrus-logstash-hook v1.0.0 h1:e+C0SB5R1pu//O4MQ3f9cFuPGoOVeF2fE4Og9otCc70=

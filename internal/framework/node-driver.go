@@ -1,6 +1,11 @@
 package framework
 
-import log "go-micro.dev/v5/logger"
+import (
+	"fmt"
+	"time"
+
+	log "go-micro.dev/v5/logger"
+)
 
 func (h *Helper) activateOpenstackDriver() error {
 	err := h.Rancher.ActivateNodeDriver("openstack")
@@ -15,5 +20,38 @@ func (h *Helper) activateOpenstackDriver() error {
 		return err
 	}
 
+	err = h.isNodeDriverAccessible("openstack")
+	if err != nil {
+		log.Errorf("rancher: openstack driver is not accessible(%v)", err)
+		return err
+	}
+
 	return nil
+}
+
+func (h *Helper) isNodeDriverAccessible(driverName string) error {
+	interval := time.Second * 2
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	attemptsMax := 60
+	for range attemptsMax {
+		log.Infof("rancher: checking %s node driver accessibility...", driverName)
+		<-ticker.C
+
+		accessible, err := h.Rancher.IsNodeDriverConfigable(driverName)
+		if err != nil {
+			continue
+		}
+
+		if accessible {
+			log.Infof("rancher: %s node driver is accessible", driverName)
+			return nil
+		}
+	}
+
+	return fmt.Errorf(
+		"failed to access %s node driver within the expected time frame",
+		driverName,
+	)
 }
