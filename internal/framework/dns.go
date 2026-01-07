@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/cubecos"
+	"github.com/bigstack-oss/cube-cos-app-framework/internal/definition/base"
 	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/recordsets"
 	"github.com/gophercloud/gophercloud/v2/openstack/dns/v2/zones"
 	log "go-micro.dev/v5/logger"
@@ -125,7 +126,7 @@ func (h *Helper) setVipToPrimaryDnsServer() {
 		return
 	}
 
-	targetNameserver, err := cubecos.GetClusterVirtualIp()
+	targetNameserver, err := cubecos.GetDataCenterVirtualIp(base.ManagementNet)
 	if err != nil {
 		log.Errorf("framework: failed to get cluster vip (%v)", err)
 		return
