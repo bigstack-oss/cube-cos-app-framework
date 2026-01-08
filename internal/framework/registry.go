@@ -1,7 +1,6 @@
 package framework
 
 import (
-	"encoding/json"
 	"strings"
 
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/harbor"
@@ -56,9 +55,6 @@ func (h *Helper) createRegistryServiceAccount() error {
 		log.Errorf("harbor: failed to create harbor user(%v)", err)
 		return err
 	}
-
-	b, _ := json.Marshal(h.Openstack.Options)
-	log.Infof(string(b))
 
 	_, err = cli.CreateUser("appctl", h.Spec.Openstack.Auth.Password, "appctl@registry.local")
 	if err != nil {

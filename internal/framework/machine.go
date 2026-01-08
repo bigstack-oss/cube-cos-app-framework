@@ -57,6 +57,7 @@ func (h *Helper) genMasterMachineSpec() *rancher.OpenstackMachine {
 		SshUser:        h.Spec.Openstack.SSH.User,
 		TenantId:       h.Spec.Openstack.Project.ID,
 		UserId:         h.Spec.Openstack.User.ID,
+		UserDataFile:   h.genLocalDnsRecord(),
 	}
 }
 
@@ -91,6 +92,7 @@ func (h *Helper) genWorkerMachineSpec() *rancher.OpenstackMachine {
 		SshUser:        h.Spec.Openstack.SSH.User,
 		TenantId:       h.Spec.Openstack.Project.ID,
 		UserId:         h.Spec.Openstack.User.ID,
+		UserDataFile:   h.genLocalDnsRecord(),
 	}
 }
 
@@ -111,4 +113,19 @@ func (h *Helper) genCommaSplitSecurityGroups() string {
 	}
 
 	return secGroups[:len(secGroups)-1]
+}
+
+func (h *Helper) genLocalDnsRecord() string {
+	etcHostRecord := `#cloud-config
+runcmd:
+- |
+  grep -q "%s" /etc/hosts || \
+  echo "%s %s" >> /etc/hosts
+`
+
+	return fmt.Sprintf(etcHostRecord,
+		h.Spec.Framework.Networks.LoadBalancer.Ip,
+		h.Spec.Framework.Networks.LoadBalancer.Ip,
+		h.Spec.Framework.Name+"."+h.getInternalRegistryDomainName(),
+	)
 }
