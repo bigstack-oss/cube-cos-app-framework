@@ -106,17 +106,34 @@ func (h *Helper) genNetworkCreationOpts(n configs.Network) networks.CreateOpts {
 	}
 }
 
-func (h *Helper) genSubnetCreationOpts(s configs.Subnet, networkID string) subnets.CreateOpts {
+func (h *Helper) genSubnetCreationOpts(s configs.Subnet, network *configs.Network) subnets.CreateOpts {
 	return subnets.CreateOpts{
 		Name:            s.Name,
-		NetworkID:       networkID,
+		NetworkID:       network.ID,
 		CIDR:            s.Cidr,
 		IPVersion:       s.IpVersion,
 		GatewayIP:       &s.GatewayIP,
 		EnableDHCP:      &s.EnableDHCP,
 		AllocationPools: s.AllocationPools,
-		HostRoutes:      s.HostRoutes,
+		HostRoutes:      h.genHostRoutes(network),
 		ProjectID:       h.Spec.Openstack.Project.ID,
+	}
+}
+
+func (h *Helper) genHostRoutes(network *configs.Network) []subnets.HostRoute {
+	if h.Spec.Framework.IsPublicNetAndManagementNetSame() {
+		return []subnets.HostRoute{}
+	}
+
+	if network.Name != "private-k8s" {
+		return []subnets.HostRoute{}
+	}
+
+	return []subnets.HostRoute{
+		{
+			DestinationCIDR: h.getMgmtNetworkCidr(h.Spec.Framework.Networks.Management),
+			NextHop:         "192.168.1.254",
+		},
 	}
 }
 
@@ -277,17 +294,17 @@ func (h *Helper) deleteSecurityGroupRules(list []rules.SecGroupRule) {
 	}
 }
 
-func (h *Helper) createSubnetsOnNetwork(n *configs.Network) error {
-	for i, s := range n.Subnets {
+func (h *Helper) createSubnetsOnNetwork(network *configs.Network) error {
+	for i, s := range network.Subnets {
 		subnet, err := h.Openstack.CreateSubnet(
-			h.genSubnetCreationOpts(s, n.ID),
+			h.genSubnetCreationOpts(s, network),
 		)
 		if err != nil {
 			log.Errorf("openstack: failed to create subnet %s(%v)", s.Name, err)
 			return err
 		}
 
-		n.Subnets[i].ID = subnet.ID
+		network.Subnets[i].ID = subnet.ID
 		log.Infof("openstack: subnet is created successfully (%s %s)", subnet.Name, subnet.ID)
 	}
 
