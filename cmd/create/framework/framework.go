@@ -5,7 +5,6 @@ import (
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/definition/base"
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/framework"
 	"github.com/spf13/cobra"
-	log "go-micro.dev/v5/logger"
 )
 
 var (
@@ -32,27 +31,23 @@ func create() error {
 
 	h, err := framework.NewHelper(spec)
 	if err != nil {
-		log.Errorf("framework: failed to init helper(%v)", err)
 		return err
 	}
 
 	err = h.CheckPrerequisites()
 	if err != nil {
-		log.Errorf("framework: prerequisites check failed(%v)", err)
 		return err
 	}
 
 	h.PrintInfraSetupMessage()
 	err = h.CreateOpenstackResources()
 	if err != nil {
-		log.Errorf("framework: failed to apply openstack components(%v)", err)
 		return err
 	}
 
 	h.PrintK8sSetupMessage()
 	err = h.CreateKubernetesResources()
 	if err != nil {
-		log.Errorf("framework: failed to apply kubernetes components(%v)", err)
 		return err
 	}
 
