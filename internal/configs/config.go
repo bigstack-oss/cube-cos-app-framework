@@ -139,7 +139,7 @@ var (
 				{Name: "admin", User: "admin (IAM)"},
 				{Name: "_member_", User: "app-framework"},
 			},
-			FloatingIpPool: "public",
+			FloatingIpPool: "",
 			EndpointType:   "publicURL",
 			Routers: []Router{
 				{
@@ -158,8 +158,6 @@ var (
 					IpVersion:    4,
 					AdminStateUp: true,
 					Shared:       false,
-					Management:   "public",
-					Public:       "public",
 					Subnets: []Subnet{
 						{
 							Name:       "private_subnet",
@@ -178,8 +176,6 @@ var (
 					IpVersion:    4,
 					AdminStateUp: true,
 					Shared:       false,
-					Management:   "public",
-					Public:       "public",
 					Subnets: []Subnet{
 						{
 							Name:       "private-k8s_subnet",

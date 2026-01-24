@@ -11,6 +11,12 @@ import (
 )
 
 func (h *Helper) createRouterToNetworks() error {
+	err := h.syncRouterDetails()
+	if err != nil {
+		log.Errorf("openstack: failed to sync router details(%v)", err)
+		return err
+	}
+
 	for i, r := range h.Spec.Openstack.Routers {
 		true := true
 		net, err := h.Openstack.GetNetworkByName(networks.ListOpts{Name: r.Network.Name, Shared: &true})
@@ -28,6 +34,73 @@ func (h *Helper) createRouterToNetworks() error {
 		h.Spec.Openstack.Routers[i].ID = router.ID
 		h.attachSubnetsToRouter(&h.Spec.Openstack.Routers[i])
 		log.Infof("openstack: router is created successfully (%s %s)", router.Name, router.ID)
+	}
+
+	return nil
+}
+
+func (h *Helper) syncRouterDetails() error {
+	for i, router := range h.Spec.Openstack.Routers {
+		if router.Name == "public" {
+			h.Spec.Openstack.Routers[i].Name = h.Spec.Framework.Networks.Public
+			h.Spec.Openstack.Routers[i].Network.Name = h.Spec.Framework.Networks.Public
+		}
+	}
+
+	if !h.Spec.Framework.IsPublicNetAndManagementNetSame() {
+		h.appendManagementRouterForK8sConnection()
+		err := h.setManagementPortForK8sConnection()
+		if err != nil {
+			log.Errorf("openstack: failed to set management port for k8s connection(%v)", err)
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (h *Helper) appendManagementRouterForK8sConnection() {
+	if h.Spec.Framework.IsPublicNetAndManagementNetSame() {
+		return
+	}
+
+	h.Spec.Openstack.Routers = append(
+		h.Spec.Openstack.Routers,
+		configs.Router{
+			Name:         h.Spec.Framework.Networks.Management,
+			Network:      configs.Network{Name: h.Spec.Framework.Networks.Management},
+			AdminStateUp: true,
+			Subnets:      []configs.Subnet{{Name: "private-k8s_subnet", PortIp: "192.168.1.254"}},
+		},
+	)
+}
+
+func (h *Helper) setManagementPortForK8sConnection() error {
+	network, err := h.Openstack.GetNetworkByName(networks.ListOpts{
+		Name:      "private-k8s",
+		ProjectID: h.Spec.Openstack.Project.ID,
+	})
+	if err != nil {
+		log.Errorf("openstack: failed to get network private-k8s(%v)", err)
+		return err
+	}
+
+	subnet, err := h.Openstack.GetSubnetByName(subnets.ListOpts{
+		Name:      "private-k8s_subnet",
+		ProjectID: h.Spec.Openstack.Project.ID,
+	})
+	if err != nil {
+		log.Errorf("openstack: failed to get subnet private-k8s_subnet(%v)", err)
+		return err
+	}
+
+	_, err = h.Openstack.CreatePort(ports.CreateOpts{
+		NetworkID: network.ID,
+		FixedIPs:  []ports.IP{{SubnetID: subnet.ID, IPAddress: "192.168.1.254"}},
+	})
+	if err != nil {
+		log.Errorf("openstack: failed to create port for subnet private-k8s_subnet(%v)", err)
+		return err
 	}
 
 	return nil
@@ -139,8 +212,8 @@ func (h *Helper) genRouterCreationOpts(r configs.Router, networkID string) route
 }
 
 func (h *Helper) attachSubnetsToRouter(router *configs.Router) {
-	for _, s := range router.Subnets {
-		opts, err := h.genAddRouterInterfaceOpts(s)
+	for _, subnet := range router.Subnets {
+		opts, err := h.genAddRouterInterfaceOpts(subnet)
 		if err != nil {
 			log.Errorf("failed to generate add router interface opts(%v)", err)
 			continue
@@ -148,7 +221,7 @@ func (h *Helper) attachSubnetsToRouter(router *configs.Router) {
 
 		_, err = h.Openstack.AttachNetworkToRouter(router.ID, *opts)
 		if err != nil {
-			log.Errorf("failed to attach subnet to router(%v)", err)
+			log.Errorf("failed to attach subnet to router %s(%v)", router.Name, err)
 		}
 	}
 }
@@ -167,12 +240,18 @@ func (h *Helper) genAddRouterInterfaceOpts(s configs.Subnet) (*routers.AddInterf
 		return opts, nil
 	}
 
-	port, err := h.Openstack.GetPortByIp(s.PortIp)
+	net, err := h.Openstack.GetNetworkByName(networks.ListOpts{
+		Name:      "private-k8s",
+		ProjectID: h.Spec.Openstack.Project.ID,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	opts.PortID = port.ID
-	return opts, nil
+	port, err := h.Openstack.GetPortByNetIdAndIp(net.ID, s.PortIp)
+	if err != nil {
+		return opts, err
+	}
 
+	return &routers.AddInterfaceOpts{PortID: port.ID}, nil
 }

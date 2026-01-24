@@ -26,7 +26,7 @@ func (h *Helper) overrideOpenstackCcmChart(chart helm.Chart) (*helm.Chart, error
 
 func (h *Helper) customizeOpenstackCcmValues() (*values.Options, error) {
 	true := true
-	floatingNet, err := h.Openstack.GetNetworkByName(networks.ListOpts{Name: "public", Shared: &true})
+	floatingNet, err := h.Openstack.GetNetworkByName(networks.ListOpts{Name: h.Spec.Framework.Networks.Public, Shared: &true})
 	if err != nil {
 		return nil, errors.Wrapf(err, "Failed to get network by name")
 	}

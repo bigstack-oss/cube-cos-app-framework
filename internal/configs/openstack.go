@@ -68,8 +68,6 @@ type Network struct {
 	IpVersion    int      `json:"ipVersion"`
 	Subnets      []Subnet `json:"subnets"`
 	AdminStateUp bool     `json:"adminStateUp"`
-	Management   string   `json:"management"`
-	Public       string   `json:"public"`
 	Shared       bool     `json:"shared"`
 }
 
