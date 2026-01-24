@@ -139,7 +139,7 @@ var (
 				{Name: "admin", User: "admin (IAM)"},
 				{Name: "_member_", User: "app-framework"},
 			},
-			FloatingIpPool: "public",
+			FloatingIpPool: "",
 			EndpointType:   "publicURL",
 			Routers: []Router{
 				{

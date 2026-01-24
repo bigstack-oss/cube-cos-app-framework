@@ -282,22 +282,26 @@ func (h *Helper) CheckPrerequisites() error {
 	h.PrintInfraCheckMessage()
 	err := h.CheckOsImages()
 	if err != nil {
+		log.Infof("framework: openstack images check failed(%v)", err)
 		return err
 	}
 
 	err = h.CheckOsFlavors()
 	if err != nil {
+		log.Infof("framework: openstack flavors check failed(%v)", err)
 		return err
 	}
 
 	h.PrintK8sCheckMessage()
 	err = h.CheckOciImages()
 	if err != nil {
+		log.Infof("framework: rancher oci images check failed(%v)", err)
 		return err
 	}
 
 	err = h.CheckHelmCharts()
 	if err != nil {
+		log.Infof("framework: rancher helm charts check failed(%v)", err)
 		return err
 	}
 
