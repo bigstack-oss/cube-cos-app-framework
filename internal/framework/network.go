@@ -5,6 +5,7 @@ import (
 
 	"github.com/bigstack-oss/bigstack-dependency-go/pkg/openstack/v2"
 	"github.com/bigstack-oss/cube-cos-app-framework/internal/definition/base"
+	"github.com/gophercloud/gophercloud/v2/openstack/networking/v2/networks"
 	"github.com/gophercloud/gophercloud/v2/openstack/sharedfilesystems/v2/sharenetworks"
 	log "go-micro.dev/v5/logger"
 )
@@ -90,4 +91,21 @@ func (h *Helper) genShareNetworkCreationOpts(shareNet, networkId, subnetId strin
 		NeutronNetID:    networkId,
 		NeutronSubnetID: subnetId,
 	}
+}
+
+func (h *Helper) setTagToManagementNetwork() error {
+	net, err := h.Openstack.GetNetworkByName(networks.ListOpts{Name: h.Spec.Framework.Networks.Management})
+	if err != nil {
+		log.Errorf("openstack: failed to get management network %s(%v)", h.Spec.Framework.Networks.Management, err)
+		return err
+	}
+
+	err = h.Openstack.AddNetworkTag(net.ID, "APPFW_MGMT_NET")
+	if err != nil {
+		log.Errorf("openstack: failed to set tag to management network %s(%v)", h.Spec.Framework.Networks.Management, err)
+		return err
+	}
+
+	log.Infof("openstack: tag is set to management network %s successfully", h.Spec.Framework.Networks.Management)
+	return nil
 }
