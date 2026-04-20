@@ -119,7 +119,9 @@ func (h *Helper) genKubernetesSpec(machinePool map[string]rancher.OpenstackMachi
 					Mirrors: h.genRegistryMirrorLists(),
 				},
 				ChartValues: rancher.ChartValues{
-					Rke2Cilium: rancher.Rke2Cilium{},
+					Rke2Cilium: rancher.Rke2Cilium{
+						MTU: 1350,
+					},
 				},
 				MachinePools: []rancher.MachinePool{
 					{
