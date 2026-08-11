@@ -1,4 +1,4 @@
-FROM golang:1.24-alpine3.21
+FROM golang:1.26-alpine3.23
 ENV USER=jenkins UID=1000 GID=1000
 RUN apk add --no-cache bash git openssh go-task zip
 RUN addgroup -g ${GID} ${USER}
