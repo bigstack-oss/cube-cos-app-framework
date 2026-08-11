@@ -126,10 +126,18 @@ pipeline {
 
     post {
         always {
-            echo 'Cleaning up...'
-            cleanWs()
-
             script {
+                echo 'Cleaning up...'
+                // cleanWs() needs a workspace. When the agent itself fails to
+                // come up there is none, and the resulting
+                // MissingContextVariableException hides the real error and
+                // skips the Slack notification below.
+                try {
+                    cleanWs()
+                } catch (err) {
+                    echo "Skipping workspace cleanup: ${err.message}"
+                }
+
                 echo 'Sending Slack notification...'
                 sendSlackNotification(env.GIT_BRANCH, currentBuild.result ?: 'SUCCESS', env.VERSION, env.PR_OR_COMMIT)
             }
