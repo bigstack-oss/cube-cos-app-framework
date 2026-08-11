@@ -3,7 +3,9 @@ pipeline {
         docker {
             image 'localhost:5000/cube-cos-app-framework-jail'
             args '-u 1000:1000'
-            label 'bldsrv_prod'
+            // Pinned: the jail image only exists in the local registry on
+            // 10.32.200.11, so the broader 'bldsrv_prod' label is a coin flip.
+            label 'bldsrv_prod_200.11'
             reuseNode true
         }
     }
@@ -14,7 +16,7 @@ pipeline {
         REPO_NAME      = "${OWNER}/${PROJ_NAME}"
         GIT_BRANCH     = "${env.BRANCH_NAME}"
 
-        BLDSRV         = 'bldsrv_prod'
+        BLDSRV         = 'bldsrv_prod_200.11'
 
         GITHUB_PAT     = 'Bigstack-CI-Bot-PAT'
         GITHUB_SSH_KEY = 'github-SSH-KEY'

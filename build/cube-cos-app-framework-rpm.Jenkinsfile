@@ -3,7 +3,9 @@ pipeline {
         docker {
             image 'localhost:5000/cube-cos-app-framework-rpm'
             args '-u 1000:1000'
-            label 'bldsrv_prod'
+            // Pinned: the rpm image only exists in the local registry on
+            // 10.32.200.11, so the broader 'bldsrv_prod' label is a coin flip.
+            label 'bldsrv_prod_200.11'
         }
     }
 
@@ -12,7 +14,7 @@ pipeline {
         PROJ_NAME      = 'cube-cos-app-framework'
         REPO_NAME      = "${OWNER}/${PROJ_NAME}"
 
-        BLDSRV         = 'bldsrv_prod'
+        BLDSRV         = 'bldsrv_prod_200.11'
 
         GITHUB_PAT     = 'Bigstack-CI-Bot-PAT'
         SLACK_CHANNEL  = "#${PROJ_NAME}-ci"
