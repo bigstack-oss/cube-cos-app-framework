@@ -6,6 +6,10 @@ pipeline {
             // Pinned: the jail image only exists in the local registry on
             // 10.32.200.11, so the broader 'bldsrv_prod' label is a coin flip.
             label 'bldsrv_prod_200.11'
+            // Without this the agent only runs 'docker inspect' and reuses
+            // whatever ':latest' is already cached on the node, so a freshly
+            // pushed image is silently ignored.
+            alwaysPull true
             reuseNode true
         }
     }
