@@ -481,8 +481,13 @@ func (h *Helper) applyIngressLoadBalancer() error {
 			Namespace: "kube-system",
 		},
 		Spec: corev1.ServiceSpec{
-			Type:                  corev1.ServiceTypeLoadBalancer,
-			ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeLocal,
+			Type: corev1.ServiceTypeLoadBalancer,
+			// Cluster, not Local: the ingress-nginx DaemonSet never runs on the
+			// control-plane node (its taints), so Local blackholes any LB member
+			// on the master and confuses the CCM's floating-IP placement (the LB IP
+			// lands off the Octavia VIP). Cluster lets every node forward to an
+			// ingress pod and the FIP bind to the VIP cleanly.
+			ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeCluster,
 			InternalTrafficPolicy: &internalPolicy,
 			SessionAffinity:       corev1.ServiceAffinityNone,
 			Selector: map[string]string{
