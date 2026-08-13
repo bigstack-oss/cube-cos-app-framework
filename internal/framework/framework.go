@@ -558,6 +558,13 @@ func (h *Helper) DeleteKubernetesResources() error {
 		}
 	}
 
+	// A node whose VM is already gone can leave its OpenstackMachine wedged on the
+	// rancher/machine "does not exist" delete error, which deadlocks the whole
+	// cluster deletion. Sweep such stuck finalizers in the background while we wait.
+	done := make(chan struct{})
+	go h.sweepStuckMachinesUntil(done)
+	defer close(done)
+
 	err = h.Rancher.WaitKubernetesDeleted(h.Spec.Framework.Name)
 	if err != nil {
 		return err
