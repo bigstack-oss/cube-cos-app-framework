@@ -356,6 +356,11 @@ func (h *Helper) CreateOpenstackResources() error {
 		return err
 	}
 
+	err = h.reserveLoadBalancerFloatingIp()
+	if err != nil {
+		return err
+	}
+
 	err = h.createRouterToNetworks()
 	if err != nil {
 		return err
