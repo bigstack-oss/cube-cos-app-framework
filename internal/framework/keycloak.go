@@ -63,7 +63,14 @@ func (h *Helper) overrideKeycloakChart(chart helm.Chart) (*helm.Chart, error) {
 }
 
 func (h *Helper) customizeKeycloakValues() (*values.Options, error) {
-	return &values.Options{
+	opts := &values.Options{
 		ValueFiles: []string{"/opt/appfw/plugins/values/keycloak.yaml"},
-	}, nil
+	}
+
+	// The "Log in" link in the password-reset email; cube-portal is served under /portal on the ingress LB IP.
+	if ip := h.Spec.Framework.Networks.LoadBalancer.Ip; ip != "" {
+		opts.Values = []string{"keycloak.cubecmp.loginUrl=https://" + ip + "/portal"}
+	}
+
+	return opts, nil
 }

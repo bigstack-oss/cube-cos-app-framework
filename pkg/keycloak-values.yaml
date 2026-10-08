@@ -6,6 +6,20 @@ ingress:
         - path: /auth
           pathType: Prefix
 
+keycloak:
+  cubecmp:
+    loginUrl: ""
+    productName: "CubeCMP"
+
+rotation:
+  exemptGroup: rotation-exempt
+  defaultMaxAge: 90d
+  jarFileName: kc-group-rotation-0.1.0.jar
+
+eventListener:
+  jarFileName: kc-webhook-event-listener-0.1.0.jar
+  webhookUrl: http://portal-api.cube-portal.svc.cluster.local:8080/portal/api/v2/keycloak/events
+
 extraEnv: |
   - name: KEYCLOAK_USER
     value: admin
@@ -15,6 +29,14 @@ extraEnv: |
     value: "true"
   - name: KEYCLOAK_DEFAULT_THEME
     value: cube
+  {{- include "cube.rotation.validate" . }}
+  {{- include "cube.eventlistener.validate" . }}
+  - name: JAVA_OPTS_APPEND
+    value: >-
+      -Dcmp.rotation.groupMaxAge={{ .Values.rotation.exemptGroup }}:exempt
+      -Dcmp.rotation.defaultMaxAge={{ .Values.rotation.defaultMaxAge }}
+      -Dcmp.webhook.url={{ .Values.eventListener.webhookUrl }}
+      -Dkeycloak.emailSender.provider=cmp-inline
 
 extraInitContainers: |
   - name: theme-provider
@@ -27,6 +49,12 @@ extraInitContainers: |
       - |
         echo "Copying theme..."
         tar -xf /tmp/cube.tar.gz --strip-components=2 -C /theme
+        sed -i "s#__CUBECMP_LOGIN_URL__#$CUBECMP_LOGIN_URL#g; s#__CUBECMP_PRODUCT_NAME__#$CUBECMP_PRODUCT_NAME#g" /theme/email/theme.properties
+    env:
+      - name: CUBECMP_LOGIN_URL
+        value: {{ .Values.keycloak.cubecmp.loginUrl | quote }}
+      - name: CUBECMP_PRODUCT_NAME
+        value: {{ .Values.keycloak.cubecmp.productName | quote }}
     volumeMounts:
       - name: theme
         mountPath: /theme
@@ -37,6 +65,15 @@ extraInitContainers: |
 extraVolumeMounts: |
   - name: theme
     mountPath: /opt/jboss/keycloak/themes/cube
+  - name: keycloak-cmp-spi-volume
+    mountPath: /opt/jboss/keycloak/standalone/deployments/cmp-post-password-confirm-1.0.0.jar
+    subPath: cmp-post-password-confirm-1.0.0.jar
+  - name: rotation-spi-volume
+    mountPath: /opt/jboss/keycloak/standalone/deployments/{{ .Values.rotation.jarFileName }}
+    subPath: {{ .Values.rotation.jarFileName }}
+  - name: eventlistener-spi-volume
+    mountPath: /opt/jboss/keycloak/standalone/deployments/{{ .Values.eventListener.jarFileName }}
+    subPath: {{ .Values.eventListener.jarFileName }}
 
 extraVolumes: |
   - name: theme
@@ -44,3 +81,18 @@ extraVolumes: |
   - name: cube-theme-volume
     configMap:
       name: cube-theme
+  - name: keycloak-cmp-spi-volume
+    configMap:
+      name: keycloak-cmp-spi
+  - name: rotation-spi-volume
+    configMap:
+      name: cube-rotation-spi
+  - name: eventlistener-spi-volume
+    configMap:
+      name: cube-eventlistener-spi
+
+# The 18.4.4 chart's postgresql subchart defaults to bitnami/postgresql:11.14.0-debian-10-r28, a tag
+# Docker Hub no longer serves; pin the image appfw ships offline (plugins/images/tars) instead.
+postgresql:
+  image:
+    tag: 11.11.0-debian-10-r31
