@@ -97,10 +97,10 @@ var (
 					},
 					{
 						Release:   "keycloak",
-						Version:   "18.1.1-cube",
+						Version:   "18.4.4-cube",
 						Namespace: "keycloak",
 						Tgz: helm.Tgz{
-							Local: "/opt/appfw/plugins/charts/keycloak-18.1.1-cube.tgz",
+							Local: "/opt/appfw/plugins/charts/keycloak-18.4.4-cube.tgz",
 						},
 					},
 				},
