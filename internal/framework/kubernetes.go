@@ -14,6 +14,7 @@ import (
 	"github.com/gophercloud/gophercloud/v2/openstack/sharedfilesystems/v2/sharenetworks"
 	"github.com/pkg/errors"
 	log "go-micro.dev/v5/logger"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -431,7 +432,15 @@ func (h *Helper) waitForAllPodsToBeReady() error {
 			continue
 		}
 
-		if !areAllPodsReady(*pods) {
+		h.Kubernetes.SetJobClient("")
+		jobs, err := h.Kubernetes.ListJobs(metav1.ListOptions{})
+		if err != nil {
+			time.Sleep(interval)
+			attemptsMax--
+			continue
+		}
+
+		if !areAllPodsReady(*pods, completedJobs(*jobs)) {
 			time.Sleep(interval)
 			attemptsMax--
 			continue
@@ -443,11 +452,25 @@ func (h *Helper) waitForAllPodsToBeReady() error {
 	return fmt.Errorf("some of system pods are not ready after %d seconds", int(interval.Seconds())*240)
 }
 
-func areAllPodsReady(pods corev1.PodList) bool {
+// completedJobs returns the "namespace/name" of every Job that has completed
+func completedJobs(jobs batchv1.JobList) map[string]bool {
+	completed := map[string]bool{}
+	for _, job := range jobs.Items {
+		for _, condition := range job.Status.Conditions {
+			if condition.Type == batchv1.JobComplete && condition.Status == corev1.ConditionTrue {
+				completed[job.Namespace+"/"+job.Name] = true
+			}
+		}
+	}
+
+	return completed
+}
+
+func areAllPodsReady(pods corev1.PodList, completedJobs map[string]bool) bool {
 	areAllReady := true
 
 	for _, pod := range pods.Items {
-		if !isPodReady(&pod) {
+		if !isPodReady(&pod, completedJobs) {
 			areAllReady = false
 			break
 		}
@@ -456,8 +479,14 @@ func areAllPodsReady(pods corev1.PodList) bool {
 	return areAllReady
 }
 
-func isPodReady(pod *corev1.Pod) bool {
+func isPodReady(pod *corev1.Pod, completedJobs map[string]bool) bool {
 	if pod.Status.Phase == corev1.PodSucceeded {
+		return true
+	}
+
+	// a Job retries a failed pod with a new one, so the failed pod stays listed;
+	// it only counts as done once its Job completed
+	if pod.Status.Phase == corev1.PodFailed && completedJobs[pod.Namespace+"/"+ownerJob(pod)] {
 		return true
 	}
 
@@ -470,6 +499,16 @@ func isPodReady(pod *corev1.Pod) bool {
 	}
 
 	return false
+}
+
+func ownerJob(pod *corev1.Pod) string {
+	for _, ref := range pod.OwnerReferences {
+		if ref.Kind == "Job" {
+			return ref.Name
+		}
+	}
+
+	return ""
 }
 
 func (h *Helper) applyIngressLoadBalancer() error {
