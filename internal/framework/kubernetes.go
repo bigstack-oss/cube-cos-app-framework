@@ -461,11 +461,26 @@ func isPodReady(pod *corev1.Pod) bool {
 		return true
 	}
 
+	// a Job retries a failed pod with a new one, so the failed pod stays listed
+	if pod.Status.Phase == corev1.PodFailed && isOwnedByJob(pod) {
+		return true
+	}
+
 	if pod.Status.Phase == corev1.PodRunning {
 		for _, condition := range pod.Status.Conditions {
 			if condition.Type == corev1.PodReady && condition.Status == corev1.ConditionTrue {
 				return true
 			}
+		}
+	}
+
+	return false
+}
+
+func isOwnedByJob(pod *corev1.Pod) bool {
+	for _, ref := range pod.OwnerReferences {
+		if ref.Kind == "Job" {
+			return true
 		}
 	}
 
