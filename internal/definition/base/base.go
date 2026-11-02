@@ -10,6 +10,7 @@ var (
 	EtcOpenstackAuth   = "/etc/admin-openrc.sh"
 	TerrformWorkingDir = "/var/lib/terraform"
 	TerraformVersion   = "0.14.3"
+	TerraformExecPath  = "/usr/local/bin/terraform-cube.sh"
 
 	IsHaEnabled   = false
 	ManagementNet = ""

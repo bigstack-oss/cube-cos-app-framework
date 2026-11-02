@@ -70,9 +70,15 @@ func NewGlobalOpenstackHelper() error {
 }
 
 func NewGlobalTerraformHelper() error {
+	// Run terraform through terraform-cube.sh, as every other caller on the node does. It
+	// waits for any other terraform run and re-inits the backend first, over TLS once the
+	// node's etcd enforces it. Bare /usr/local/bin/terraform keeps whatever backend the last
+	// init left in .terraform/, and against an enforcing etcd that backend retries without
+	// end.
 	return bsterraform.NewGlobalHelper(
 		bsterraform.WorkingDir(base.TerrformWorkingDir),
 		bsterraform.Version(base.TerraformVersion),
+		bsterraform.ExecPath(base.TerraformExecPath),
 	)
 }
 
