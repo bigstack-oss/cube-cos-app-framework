@@ -20,6 +20,12 @@ eventListener:
   jarFileName: kc-webhook-event-listener-0.1.0.jar
   webhookUrl: http://portal-api.cube-portal.svc.cluster.local:8080/portal/api/v2/keycloak/events
 
+# The theme reaches the pod only through the theme-provider init container,
+# which runs at pod start. Checksumming it into the pod template makes a
+# theme-only helm upgrade restart the pod.
+podAnnotations:
+  checksum/cube-theme: '{{ .Files.Get "data/cube.tar.gz" | sha256sum }}'
+
 extraEnv: |
   - name: KEYCLOAK_USER
     value: admin
