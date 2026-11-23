@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	github.com/bigstack-oss/bigstack-dependency-go v0.0.0-20260331100612-0694552a0aef
-	github.com/gophercloud/gophercloud/v2 v2.15.0
+	github.com/gophercloud/gophercloud/v2 v2.16.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.10.2
 	go-micro.dev/v5 v5.30.1
